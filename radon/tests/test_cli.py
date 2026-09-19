@@ -85,6 +85,16 @@ def test_config_converts_types(mocker):
     assert cfg.get_value('missing_test', str, 'Y') == 'Y'
     assert cfg.get_value('int_test', int, 10) == 19
 
+    class TypeLike:
+        def __init__(self, target):
+            self.target = target
+
+        def __eq__(self, other):
+            return other is self.target
+
+    assert cfg.get_value('bool_test', TypeLike(bool), False) is True
+    assert cfg.get_value('int_test', TypeLike(int), 10) == 19
+
 
 def test_cc(mocker, log_mock):
     harv_mock = mocker.patch('radon.cli.CCHarvester')
