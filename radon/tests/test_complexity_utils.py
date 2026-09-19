@@ -3,7 +3,13 @@ import operator
 
 import pytest
 
-from radon.complexity import *
+from radon.complexity import (
+    add_inner_blocks,
+    average_complexity,
+    cc_rank,
+    cc_visit,
+    sorted_results,
+)
 from radon.contrib.flake8 import Flake8Checker
 from radon.visitors import Class, Function
 

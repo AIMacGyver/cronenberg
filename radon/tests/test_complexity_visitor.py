@@ -2,7 +2,7 @@ import textwrap
 
 import pytest
 
-from radon.visitors import *
+from radon.visitors import GET_COMPLEXITY, Class, ComplexityVisitor, Function
 
 
 def dedent(code):
