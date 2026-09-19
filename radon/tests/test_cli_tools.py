@@ -559,7 +559,7 @@ CC_TO_TERMINAL_CASES = [
 
 def test_cc_to_terminal():
     # do the patching
-    tools.LETTERS_COLORS = dict((l, f'<!{l}!>') for l in 'FMC')
+    tools.LETTERS_COLORS = dict((letter, f'<!{letter}!>') for letter in 'FMC')
     tools.RANKS_COLORS = dict((r, f'<|{r}|>') for r in 'ABCDEF')
     tools.BRIGHT = '@'
     tools.RESET = '__R__'
