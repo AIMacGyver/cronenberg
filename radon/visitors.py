@@ -237,7 +237,7 @@ class ComplexityVisitor(CodeVisitor):
         elif name == 'comprehension':
             self.complexity += len(node.ifs) + 1
 
-        super(ComplexityVisitor, self).generic_visit(node)
+        super().generic_visit(node)
 
     def visit_Assert(self, node):
         '''When visiting `assert` statements, the complexity is increased only
@@ -383,7 +383,7 @@ class HalsteadVisitor(CodeVisitor):
 
                 self.operands_seen.add((self.context, new_operand))
             # Now dispatch to children
-            super(HalsteadVisitor, self).generic_visit(node)
+            super().generic_visit(node)
 
         return aux
 
