@@ -167,7 +167,8 @@ CodeFactor
 Usage with Jupyter Notebooks
 ----------------------------
 
-Radon can be used with ``.ipynb`` files to inspect code metrics for Python cells. Any ``%`` macros will be ignored in the metrics.
+Cronenberg can inspect code metrics for Python cells in ``.ipynb`` files.
+Any ``%`` macros are ignored in the metrics.
 
 .. note::
 
@@ -177,47 +178,23 @@ To enable scanning of Jupyter notebooks, add the ``--include-ipynb`` flag.
 
 To enable reporting of individual cells, add the ``--ipynb-cells`` flag.
 
-Quick example:
+Analyze the included example:
 
-.. code-block:: sh
+.. code-block:: console
 
-    $ radon raw --include-ipynb --ipynb-cells .
-    example.ipynb
-        LOC: 63
-        LLOC: 37
+    $ cronenberg raw --include-ipynb radon/tests/data/example.ipynb
+    radon/tests/data/example.ipynb
+        LOC: 51
+        LLOC: 36
         SLOC: 37
         Comments: 3
         Single comments: 2
-        Multi: 10
-        Blank: 14
+        Multi: 0
+        Blank: 12
         - Comment Stats
-            (C % L): 5%
+            (C % L): 6%
             (C % S): 8%
-            (C + M % L): 21%
-    example.ipynb:[0]
-        LOC: 0
-        LLOC: 0
-        SLOC: 0
-        Comments: 0
-        Single comments: 0
-        Multi: 0
-        Blank: 0
-        - Comment Stats
-            (C % L): 0%
-            (C % S): 0%
-            (C + M % L): 0%
-    example.ipynb:[1]
-        LOC: 2
-        LLOC: 2
-        SLOC: 2
-        Comments: 0
-        Single comments: 0
-        Multi: 0
-        Blank: 0
-        - Comment Stats
-            (C % L): 0%
-            (C % S): 0%
-            (C + M % L): 0%
+            (C + M % L): 6%
 
 
 
