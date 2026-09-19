@@ -333,7 +333,7 @@ def dict_to_xml(results):
             unit = et.SubElement(metric, 'unit')
             name = block['name']
             if 'classname' in block:
-                name = '{0}.{1}'.format(block['classname'], block['name'])
+                name = '{}.{}'.format(block['classname'], block['name'])
             unit.text = name
 
             et.SubElement(metric, 'classification').text = block['rank']
@@ -380,7 +380,7 @@ def dict_to_codeclimate_issues(results, threshold='B'):
     for path in results:
         info = results[path]
         if type(info) is dict and info.get('error'):
-            description = 'Error: {0}'.format(info.get('error', error_content))
+            description = 'Error: {}'.format(info.get('error', error_content))
             beginline = re.search(r'\d+', description)
             error_category = 'Bug Risk'
 
@@ -411,8 +411,8 @@ def dict_to_codeclimate_issues(results, threshold='B'):
                 complexity = offender['complexity']
                 category = 'Complexity'
                 description = (
-                    'Cyclomatic complexity is too high in {0} {1}. '
-                    '({2})'.format(
+                    'Cyclomatic complexity is too high in {} {}. '
+                    '({})'.format(
                         offender['type'], offender['name'], complexity
                     )
                 )

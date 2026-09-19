@@ -374,7 +374,7 @@ class MIHarvester(Harvester):
             color = MI_RANKS[rank]
             to_show = ''
             if self.config.show:
-                to_show = ' ({0:.2f})'.format(mi['mi'])
+                to_show = ' ({:.2f})'.format(mi['mi'])
             yield '{0} - {1}{2}{3}{4}', (name, color, rank, to_show, RESET), {}
 
 

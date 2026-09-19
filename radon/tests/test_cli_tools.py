@@ -577,7 +577,7 @@ def test_cc_to_terminal():
         '@<!F!>F __R__12:0 f3 - <|E|>E (32)__R__',
         '@<!F!>F __R__12:0 f4 - <|F|>F (41)__R__',
     ]
-    res_noshow = ['{0}__R__'.format(r[: r.index('(') - 1]) for r in res]
+    res_noshow = ['{}__R__'.format(r[: r.index('(') - 1]) for r in res]
 
     assert tools.cc_to_terminal(results, False, 'A', 'F', False) == (
         res_noshow,
