@@ -32,8 +32,8 @@ jobs:
       - name: Sync dependencies from uv.lock
         run: uv sync --locked --all-extras --dev
 
-      # Keep the 83 existing findings visible as annotations without blocking CI.
-      - name: Ruff baseline (non-blocking; 83 legacy findings)
+      # Keep the 77 existing findings visible as annotations without blocking CI.
+      - name: Ruff baseline (non-blocking; 77 legacy findings)
         continue-on-error: true
         run: uv run --locked ruff check --output-format=github .
 
