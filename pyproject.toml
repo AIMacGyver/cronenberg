@@ -1,34 +1,73 @@
-[tool.poetry]
-name = "radon"
+[project]
+name = "cronenberg"
 version = "6.0.1"
 description = "Code Metrics in Python"
-authors = ["Michele Lacchia <michelelacchia@gmail.com>"]
+authors = [
+    { name = "Michele Lacchia", email = "michelelacchia@gmail.com" },
+]
+maintainers = [
+    { name = "Rob Annand" },
+]
 license = "MIT"
 readme = "README.rst"
-
-[tool.poetry.dependencies]
-python = ">=3.7,<4.0"
-mando = ">=0.6,<0.8"
-colorama = [
-    {version = ">=0.4.1", markers = "python_version > \"3.4\""},
-    {version = "==0.4.1", markers = "python_version <= \"3.4\""}
+requires-python = ">=3.11"
+dependencies = [
+    "colorama>=0.4.1",
+    "mando>=0.6,<0.8",
+]
+keywords = ["static analysis", "code complexity", "metrics"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Utilities",
 ]
 
-[tool.poetry.group.dev.dependencies]
-coverage = "*"
-coveralls = "*"
-pytest = [
-    {version = ">=2.7", markers = "python_version < \"3.0\""},
-    {version = ">5.0", markers = "python_version >= \"3.0\""}
-]
-pytest-mock = "*"
-argparse = "*"
-nbformat = "*"
-tox = "^4.4.7"
+[project.optional-dependencies]
+toml = ["tomli>=2.0.1"]
 
-[tool.poetry.scripts]
-radon = "radon:main"
+[project.scripts]
+cronenberg = "radon:main"
+
+[project.entry-points."flake8.extension"]
+R70 = "radon.contrib.flake8:Flake8Checker"
+
+[project.entry-points."setuptools.installation"]
+eggsecutable = "radon:main"
+
+[project.urls]
+Documentation = "https://radon.readthedocs.org/"
+Source = "https://github.com/rubik/radon"
+
+[dependency-groups]
+dev = [
+    "nbformat",
+    "pre-commit",
+    "pytest",
+    "pytest-mock",
+    "ruff",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["radon/tests"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["radon"]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -1,6 +1,13 @@
 Radon
 =====
 
+.. note::
+
+    **Project status:** Cronenberg is an experimental modernization of
+    `Radon <https://github.com/rubik/radon>`__. It currently focuses on
+    packaging, developer tooling, and infrastructure while preserving
+    behavior. Cronenberg is not yet an official Radon replacement.
+
 .. image:: https://img.shields.io/coveralls/rubik/radon/master.svg?style=for-the-badge
     :alt: Coveralls badge
     :target: https://coveralls.io/r/rubik/radon?branch=master
@@ -60,11 +67,11 @@ you'll need the extra `toml` dependency:
 
    $ pip install radon[toml]
 
-Or download the source and run the setup file:
+Or install from a source checkout:
 
 .. code-block:: sh
 
-    $ python setup.py install
+    $ pip install .
 
 Usage
 -----
