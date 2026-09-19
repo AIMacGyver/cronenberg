@@ -43,7 +43,7 @@ For touched Python files, run Ruff only on those files:
 uv run ruff check path/to/changed.py path/to/test_changed.py
 ```
 
-The repository inherits 15 non-blocking Ruff findings. Do not hide them with
+The repository inherits 11 non-blocking Ruff findings. Do not hide them with
 broad ignores or mix repository-wide cleanup into a feature pull request.
 
 Before handoff, run the full test suite:
