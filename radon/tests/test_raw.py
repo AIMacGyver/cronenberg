@@ -4,7 +4,9 @@ import pytest
 
 from radon.raw import *
 
-dedent = lambda code: textwrap.dedent(code).strip()
+
+def dedent(code):
+    return textwrap.dedent(code).strip()
 
 
 FIND_CASES = [

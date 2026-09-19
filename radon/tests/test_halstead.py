@@ -4,7 +4,9 @@ import pytest
 
 from radon.visitors import HalsteadVisitor
 
-dedent = lambda code: textwrap.dedent(code).strip()
+
+def dedent(code):
+    return textwrap.dedent(code).strip()
 
 
 SIMPLE_BLOCKS = [
