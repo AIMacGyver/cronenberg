@@ -1,5 +1,4 @@
 import json
-import locale
 import os
 import platform
 import sys
@@ -56,10 +55,7 @@ def test_open(mocker):
     else:
         mocker.patch('radon.cli.tools._open_function', m, create=True)
         tools._open('randomfile.py').__enter__()
-        if sys.version_info[:2] >= (3, 0):
-            default_encoding = 'utf-8'
-        else:
-            default_encoding = locale.getpreferredencoding(False)
+        default_encoding = 'utf-8'
         except_encoding = os.getenv(
             'RADONFILESENCODING', default_encoding
         )

@@ -1,5 +1,6 @@
 '''In this module the CLI interface is created.'''
 
+import configparser
 import inspect
 import os
 import sys
@@ -27,12 +28,6 @@ from radon.cli.harvest import (
     MIHarvester,
     RawHarvester,
 )
-
-if sys.version_info[0] == 2:
-    import ConfigParser as configparser
-else:
-    import configparser
-
 
 CONFIG_SECTION_NAME = 'radon'
 
