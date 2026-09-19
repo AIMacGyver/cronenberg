@@ -4,12 +4,15 @@ repos:
     hooks:
       - id: ruff-check
         args: [--fix]
+        files: '\.(py|ipynb)$'
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
       - id: trailing-whitespace
+        exclude: '^docs/(?:_static|_themes)/'
       - id: end-of-file-fixer
+        exclude: '^(?:docs/index\.rst|radon/tests/data/example\.ipynb)$'
       - id: check-yaml
       - id: check-toml
       - id: check-added-large-files
