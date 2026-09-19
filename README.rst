@@ -60,11 +60,11 @@ you'll need the extra `toml` dependency:
 
    $ pip install radon[toml]
 
-Or download the source and run the setup file:
+Or install from a source checkout:
 
 .. code-block:: sh
 
-    $ python setup.py install
+    $ pip install .
 
 Usage
 -----
