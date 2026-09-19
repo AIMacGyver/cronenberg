@@ -19,7 +19,7 @@ from radon.complexity import cc_rank
 from radon.visitors import Function
 
 try:
-    import nbformat
+    import nbformat  # noqa: F401  # Availability probe must execute the import.
 
     SUPPORTS_IPYNB = True
 except ImportError:
