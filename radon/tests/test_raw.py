@@ -3,10 +3,16 @@ import textwrap
 import pytest
 
 from radon.raw import OP, Module, _find, _generate, _logical, analyze
+from radon.tests.data import fun as unicode_source_fixture
 
 
 def dedent(code):
     return textwrap.dedent(code).strip()
+
+
+def test_unicode_source_fixture():
+    assert unicode_source_fixture(None) is None
+    assert 'èèèè' in unicode_source_fixture.__code__.co_consts
 
 
 FIND_CASES = [
