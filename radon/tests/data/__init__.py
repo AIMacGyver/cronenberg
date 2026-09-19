@@ -1,4 +1,4 @@
 
 
 def fun(arg):
-    a = 'èèèè'
+    _unicode_text = 'èèèè'
