@@ -2,7 +2,7 @@ import textwrap
 
 import pytest
 
-from radon.raw import *
+from radon.raw import OP, Module, _find, _generate, _logical, analyze
 
 
 def dedent(code):
