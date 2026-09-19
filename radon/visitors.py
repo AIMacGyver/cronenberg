@@ -225,8 +225,8 @@ class ComplexityVisitor(CodeVisitor):
         elif name == 'Match':
             # check if _ (else) used
             contain_underscore = any(
-                (case for case in node.cases if
-                 getattr(case.pattern, "pattern", False) is None))
+                case for case in node.cases if
+                 getattr(case.pattern, "pattern", False) is None)
             # Max used for case when match contain only _ (else)
             self.complexity += max(0, len(node.cases) - contain_underscore)
         # The For and While blocks count as 1 plus the `else` block.
