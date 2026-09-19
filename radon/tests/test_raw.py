@@ -454,13 +454,10 @@ ANALYZE_CASES = [
 ]
 
 
-@pytest.mark.parametrize('code,expected', ANALYZE_CASES)
-def test_analyze(code, expected):
-    code = dedent(code)
-
+def _assert_analysis(code, expected):
     try:
         len(expected)
-    except:
+    except TypeError:
         with pytest.raises(expected):
             analyze(code)
     else:
@@ -473,3 +470,20 @@ def test_analyze(code, expected):
             + result.single_comments
             + result.multi
         )
+
+
+@pytest.mark.parametrize('code,expected', ANALYZE_CASES)
+def test_analyze(code, expected):
+    _assert_analysis(dedent(code), expected)
+
+
+@pytest.mark.parametrize(
+    'exception_type', [KeyboardInterrupt, SystemExit, GeneratorExit]
+)
+def test_analyze_case_helper_propagates_process_control(exception_type):
+    class InterruptingExpected:
+        def __len__(self):
+            raise exception_type
+
+    with pytest.raises(exception_type):
+        _assert_analysis('', InterruptingExpected())
