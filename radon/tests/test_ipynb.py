@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 
 import pytest
 
@@ -34,6 +35,31 @@ def test_harvestor_yields_ipynb(log_mock):
     assert _is_python_file(target)
     assert len(filenames) == 1
     assert target in filenames
+
+
+@pytest.mark.skipif(not SUPPORTS_IPYNB, reason="nbformat not installed")
+def test_example_notebook_separates_prose_from_code():
+    import nbformat
+
+    target = os.path.join(DIRNAME, 'data', 'example.ipynb')
+    notebook = nbformat.read(target, as_version=nbformat.NO_CONVERT)
+    prose_cell = notebook.cells[13]
+    code_cell = notebook.cells[14]
+
+    assert prose_cell.cell_type == 'markdown'
+    assert 'Plot demonstrating the integral' in prose_cell.source
+    assert code_cell.cell_type == 'code'
+    assert code_cell.execution_count == 4
+    executable_lines = [
+        line
+        for line in code_cell.source.splitlines()
+        if line and not line.startswith('#')
+    ]
+    assert executable_lines[:3] == [
+        'import matplotlib.pyplot as plt',
+        'import numpy as np',
+        'from matplotlib.patches import Polygon',
+    ]
 
 
 @pytest.mark.skipif(not SUPPORTS_IPYNB, reason="nbformat not installed")
@@ -113,13 +139,40 @@ def test_raw_ipynb(log_mock):
     out = json.loads(harvester.as_json())
     assert harvester.config.include_ipynb is True
     assert target in out
-    assert out[target]['loc'] == 63
-    assert out[target]['lloc'] == 37
+    assert out[target]['loc'] == 51
+    assert out[target]['lloc'] == 36
     assert out[target]['sloc'] == 37
     assert out[target]['comments'] == 3
-    assert out[target]['multi'] == 10
-    assert out[target]['blank'] == 14
+    assert out[target]['multi'] == 0
+    assert out[target]['blank'] == 12
     assert out[target]['single_comments'] == 2
+
+
+@pytest.mark.skipif(not SUPPORTS_IPYNB, reason="nbformat not installed")
+def test_documented_notebook_cli():
+    root = os.path.abspath(os.path.join(DIRNAME, '..', '..'))
+    target = os.path.join('radon', 'tests', 'data', 'example.ipynb')
+    result = subprocess.run(
+        ['cronenberg', 'raw', '--include-ipynb', target],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.stdout == f'''{target}
+    LOC: 51
+    LLOC: 36
+    SLOC: 37
+    Comments: 3
+    Single comments: 2
+    Multi: 0
+    Blank: 12
+    - Comment Stats
+        (C % L): 6%
+        (C % S): 8%
+        (C + M % L): 6%
+'''
 
 
 @pytest.mark.skipif(not SUPPORTS_IPYNB, reason="nbformat not installed")
@@ -132,10 +185,10 @@ def test_raw_ipynb_cells(log_mock):
     cell_target = target + ":[3]"
     assert target in out
     assert cell_target in out
-    assert out[cell_target]['loc'] == 52
-    assert out[cell_target]['lloc'] == 27
+    assert out[cell_target]['loc'] == 40
+    assert out[cell_target]['lloc'] == 26
     assert out[cell_target]['sloc'] == 27
     assert out[cell_target]['comments'] == 3
-    assert out[cell_target]['multi'] == 10
-    assert out[cell_target]['blank'] == 13
+    assert out[cell_target]['multi'] == 0
+    assert out[cell_target]['blank'] == 11
     assert out[cell_target]['single_comments'] == 2
