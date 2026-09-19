@@ -37,6 +37,19 @@ For example:
    exclude = test_*.py
    cc_min = B
 
+Usage with Jupyter Notebooks
+----------------------------
+
+Radon can be used with ``.ipynb`` files to inspect code metrics for Python cells. Any ``%`` macros will be ignored in the metrics.
+
+.. note::
+
+   Jupyter Notebook support requires the optional ``nbformat`` package. To install, run ``pip install nbformat``.
+
+To enable scanning of Jupyter notebooks, add the ``--include-ipynb`` flag with any of the commands.
+
+To enable reporting of individual cells, add the ``--ipynb-cells`` flag with any of the commands.
+
 The :command:`cc` command
 -------------------------
 
@@ -165,6 +178,18 @@ Options
 
    Value can be set in a configuration file using the ``no_assert`` property.
 
+.. option:: --include-ipynb
+
+   Include the Python cells within IPython Notebooks in the reporting.
+
+   Value can be set in a configuration file using the ``include_ipynb`` property.
+
+.. option:: --ipynb-cells
+
+   Report on individual cells in any .ipynb files.
+
+   Value can be set in a configuration file using the ``ipynb_cells`` property.
+
 .. option:: -O, --output-file
 
    Save output to the specified output file.
@@ -281,6 +306,18 @@ Options
 
    Format results in JSON.
 
+.. option:: --include-ipynb
+
+   Include the Python cells within IPython Notebooks in the reporting.
+
+   Value can be set in a configuration file using the ``include_ipynb`` property.
+
+.. option:: --ipynb-cells
+
+   Report on individual cells in any .ipynb files.
+
+   Value can be set in a configuration file using the ``ipynb_cells`` property.
+
 .. option:: -O, --output-file
 
    Save output to the specified output file.
@@ -370,6 +407,18 @@ Options
 
    Value can be set in a configuration file using the ``output_file`` property.
 
+.. option:: --include-ipynb
+
+   Include the Python cells within IPython Notebooks in the reporting.
+
+   Value can be set in a configuration file using the ``include_ipynb`` property.
+
+.. option:: --ipynb-cells
+
+   Report on individual cells in any .ipynb files.
+
+   Value can be set in a configuration file using the ``ipynb_cells`` property.
+
 Examples
 ++++++++
 
@@ -434,6 +483,18 @@ Options
    Save output to the specified output file.
 
    Value can be set in a configuration file using the ``output_file`` property.
+
+.. option:: --include-ipynb
+
+   Include the Python cells within IPython Notebooks in the reporting.
+
+   Value can be set in a configuration file using the ``include_ipynb`` property.
+
+.. option:: --ipynb-cells
+
+   Report on individual cells in any .ipynb files.
+
+   Value can be set in a configuration file using the ``ipynb_cells`` property.
 
 Examples
 ++++++++
