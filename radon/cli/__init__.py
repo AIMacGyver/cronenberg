@@ -43,11 +43,12 @@ class FileConfig:
     def get_value(self, key, type, default):
         if not self.file_cfg.has_option(CONFIG_SECTION_NAME, key):
             return default
-        if type == int:
+        # Equality-based dispatch is public behavior for type-like values.
+        if type == int:  # noqa: E721
             return self.file_cfg.getint(
                 CONFIG_SECTION_NAME, key, fallback=default
             )
-        if type == bool:
+        if type == bool:  # noqa: E721
             return self.file_cfg.getboolean(
                 CONFIG_SECTION_NAME, key, fallback=default
             )

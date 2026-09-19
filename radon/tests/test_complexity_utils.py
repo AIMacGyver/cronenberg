@@ -4,6 +4,9 @@ import operator
 import pytest
 
 from radon.complexity import (
+    ALPHA,
+    LINES,
+    SCORE,
     add_inner_blocks,
     average_complexity,
     cc_rank,
@@ -67,6 +70,19 @@ SIMPLE_BLOCKS = [
     ([fun(12), fun(14), fun(1)], [1, 0, 2], 9.0),
     ([fun(4), cls(5), fun(2), cls(21)], [3, 1, 0, 2], 8.0),
 ]
+
+
+def test_public_ordering_callable_identity():
+    block = fun(4)
+
+    assert sorted_results.__defaults__[0] is SCORE
+    assert [ordering.__name__ for ordering in (SCORE, LINES, ALPHA)] == [
+        '<lambda>',
+        '<lambda>',
+        '<lambda>',
+    ]
+    assert all('<lambda>' in repr(ordering) for ordering in (SCORE, LINES, ALPHA))
+    assert (SCORE(block), LINES(block), ALPHA(block)) == (-4, 1, 'randomname')
 
 
 @pytest.mark.parametrize('blocks,indices,_', SIMPLE_BLOCKS)

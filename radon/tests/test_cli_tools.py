@@ -32,6 +32,34 @@ def fake_is_python_file(filename):
     return filename.endswith('.py')
 
 
+class ProtocolProbe:
+    def __init__(self, values):
+        self.values = iter(values)
+        self.send_calls = 0
+        self.throw_calls = 0
+        self.close_calls = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            return next(self.values)
+        except StopIteration:
+            raise StopIteration('delegated return') from None
+
+    def send(self, value):
+        self.send_calls += 1
+        raise AssertionError(f'unexpected send: {value!r}')
+
+    def throw(self, *args):
+        self.throw_calls += 1
+        raise AssertionError(f'unexpected throw: {args!r}')
+
+    def close(self):
+        self.close_calls += 1
+
+
 def assert_pequal(a, b):
     a, b = [list(map(os.path.normpath, p)) for p in (a, b)]
     assert a == b
@@ -75,6 +103,42 @@ def iter_files():
 
 def test_iter_files_stdin(iter_files):
     assert iter_files(['-']) == ['-']
+
+
+def test_iter_files_does_not_delegate_send_or_return(mocker):
+    probe = ProtocolProbe(['first.py', 'second.py'])
+    mocker.patch.object(tools, 'explore_directories', return_value=probe)
+    iterator = tools.iter_filenames(['directory'])
+
+    assert next(iterator) == 'first.py'
+    assert iterator.send('ignored') == 'second.py'
+    assert probe.send_calls == 0
+    with pytest.raises(StopIteration) as completed:
+        next(iterator)
+    assert completed.value.value is None
+
+
+def test_iter_files_does_not_delegate_throw(mocker):
+    probe = ProtocolProbe(['first.py'])
+    mocker.patch.object(tools, 'explore_directories', return_value=probe)
+    iterator = tools.iter_filenames(['directory'])
+
+    assert next(iterator) == 'first.py'
+    with pytest.raises(RuntimeError, match='boom'):
+        iterator.throw(RuntimeError('boom'))
+    assert probe.throw_calls == 0
+
+
+def test_iter_files_does_not_delegate_close(mocker):
+    probe = ProtocolProbe(['first.py'])
+    mocker.patch.object(tools, 'explore_directories', return_value=probe)
+    iterator = tools.iter_filenames(['directory'])
+
+    assert next(iterator) == 'first.py'
+    iterator.close()
+    assert probe.close_calls == 0
+    with pytest.raises(StopIteration):
+        next(iterator)
 
 
 def test_iter_files(mocker, iter_files):

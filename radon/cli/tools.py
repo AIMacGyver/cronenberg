@@ -108,7 +108,8 @@ def iter_filenames(paths, exclude=None, ignore=None):
         ):
             yield path
             continue
-        for filename in explore_directories(path, exclude, ignore):
+        # Keep the outer generator from delegating its protocol methods.
+        for filename in explore_directories(path, exclude, ignore):  # noqa: UP028
             yield filename
 
 

@@ -6,10 +6,10 @@ import math
 
 from radon.visitors import GET_COMPLEXITY, ComplexityVisitor, code2ast
 
-# sorted_block ordering functions
-SCORE = lambda block: -GET_COMPLEXITY(block)
-LINES = lambda block: block.lineno
-ALPHA = lambda block: block.name
+# Public ordering callables retain their lambda identity for compatibility.
+SCORE = lambda block: -GET_COMPLEXITY(block)  # noqa: E731
+LINES = lambda block: block.lineno  # noqa: E731
+ALPHA = lambda block: block.name  # noqa: E731
 
 
 def cc_rank(cc):

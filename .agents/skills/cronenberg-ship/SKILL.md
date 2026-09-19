@@ -43,12 +43,13 @@ For touched Python files, run Ruff only on those files:
 uv run ruff check path/to/changed.py path/to/test_changed.py
 ```
 
-The repository inherits 6 non-blocking Ruff findings. Do not hide them with
-broad ignores or mix repository-wide cleanup into a feature pull request.
+Ruff is blocking in CI. Use narrow, documented suppressions only when
+compatibility requires them; do not add broad ignores.
 
-Before handoff, run the full test suite:
+Before handoff, run full Ruff and the full test suite:
 
 ```bash
+uv run ruff check .
 uv run pytest
 ```
 

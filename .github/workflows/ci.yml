@@ -32,9 +32,7 @@ jobs:
       - name: Sync dependencies from uv.lock
         run: uv sync --locked --all-extras --dev
 
-      # Keep the 6 existing findings visible as annotations without blocking CI.
-      - name: Ruff baseline (non-blocking; 6 legacy findings)
-        continue-on-error: true
+      - name: Run Ruff
         run: uv run --locked ruff check --output-format=github .
 
       - name: Run pytest (blocking)
