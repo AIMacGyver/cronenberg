@@ -39,7 +39,7 @@ except ImportError:
     SUPPORTS_IPYNB = False
 
 
-class Harvester(object):
+class Harvester:
     '''Base class defining the interface of a Harvester object.
 
     A Harvester has the following lifecycle:

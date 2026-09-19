@@ -37,7 +37,7 @@ else:
 CONFIG_SECTION_NAME = 'radon'
 
 
-class FileConfig(object):
+class FileConfig:
     '''
     Yield default options by reading local configuration files.
     '''
@@ -320,7 +320,7 @@ def hal(
         log_result(harvester, json=json, xml=False, md=False, stream=stream)
 
 
-class Config(object):
+class Config:
     '''An object holding config values.'''
 
     def __init__(self, **kwargs):
