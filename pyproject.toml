@@ -5,6 +5,9 @@ description = "Code Metrics in Python"
 authors = [
     { name = "Michele Lacchia", email = "michelelacchia@gmail.com" },
 ]
+maintainers = [
+    { name = "Rob Annand" },
+]
 license = "MIT"
 readme = "README.rst"
 requires-python = ">=3.11"
