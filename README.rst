@@ -4,7 +4,7 @@ Radon
 .. note::
 
     **Project status:** Cronenberg is an experimental modernization of
-    `Radon <https://github.com/rubik/radon>`_. It currently focuses on
+    `Radon <https://github.com/rubik/radon>`__. It currently focuses on
     packaging, developer tooling, and infrastructure while preserving
     behavior. Cronenberg is not yet an official Radon replacement.
 
