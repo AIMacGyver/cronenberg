@@ -300,7 +300,9 @@ class RawHarvester(Harvester):
             )
 
         if self.config.summary:
-            _get = lambda k, v=0: sum_metrics.get(k, v)
+            def _get(k, v=0):
+                return sum_metrics.get(k, v)
+
             comments = float(_get('Comments'))
             yield '** Total **', (), {}
             for header in self.headers:

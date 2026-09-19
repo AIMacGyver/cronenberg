@@ -4,7 +4,9 @@ import pytest
 
 from radon.metrics import *
 
-dedent = lambda code: textwrap.dedent(code).strip()
+
+def dedent(code):
+    return textwrap.dedent(code).strip()
 
 
 def _compute_mi_rank(score):

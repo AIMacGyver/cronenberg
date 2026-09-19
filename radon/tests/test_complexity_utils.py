@@ -9,7 +9,9 @@ from radon.visitors import Class, Function
 
 from .test_complexity_visitor import GENERAL_CASES, dedent
 
-get_index = lambda seq: lambda index: seq[index]
+
+def get_index(seq):
+    return lambda index: seq[index]
 
 
 def _compute_cc_rank(score):
@@ -46,10 +48,12 @@ def test_rank(score, expected_rank):
         assert cc_rank(score) == expected_rank
 
 
-fun = lambda complexity: Function(
-    'randomname', 1, 4, 23, False, None, [], complexity
-)
-cls = lambda complexity: Class('randomname_', 3, 21, 18, [], [], complexity)
+def fun(complexity):
+    return Function('randomname', 1, 4, 23, False, None, [], complexity)
+
+
+def cls(complexity):
+    return Class('randomname_', 3, 21, 18, [], [], complexity)
 
 # This works with both the next two tests
 SIMPLE_BLOCKS = [
