@@ -15,8 +15,7 @@ import sys
 import xml.etree.cElementTree as et
 from contextlib import contextmanager
 
-from radon.cli.colors import (BRIGHT, LETTERS_COLORS, RANKS_COLORS, RESET,
-                              TEMPLATE)
+from radon.cli.colors import BRIGHT, LETTERS_COLORS, RANKS_COLORS, RESET, TEMPLATE
 from radon.complexity import cc_rank
 from radon.visitors import Function
 

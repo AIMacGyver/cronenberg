@@ -1,5 +1,6 @@
 if __name__ == '__main__':
     import sys
+
     import pytest
 
     # see: https://docs.pytest.org/en/6.2.x/deprecations.html#the-strict-command-line-option

@@ -7,7 +7,8 @@ __version__ = '6.0.1'
 def main():
     '''The entry point for Setuptools.'''
     import sys
-    from radon.cli import program, log_error
+
+    from radon.cli import log_error, program
 
     if not sys.argv[1:]:
         sys.argv.append('-h')
