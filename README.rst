@@ -1,6 +1,13 @@
 Radon
 =====
 
+.. note::
+
+    **Project status:** Cronenberg is an experimental modernization of
+    `Radon <https://github.com/rubik/radon>`_. It currently focuses on
+    packaging, developer tooling, and infrastructure while preserving
+    behavior. Cronenberg is not yet an official Radon replacement.
+
 .. image:: https://img.shields.io/coveralls/rubik/radon/master.svg?style=for-the-badge
     :alt: Coveralls badge
     :target: https://coveralls.io/r/rubik/radon?branch=master
