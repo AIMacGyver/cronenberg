@@ -420,4 +420,3 @@ def get_fingerprint(path, additional_parts):
     m.update(key.encode('utf-8'))
     return m.hexdigest()
 
-
