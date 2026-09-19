@@ -82,38 +82,27 @@ Documentation is at https://radon.readthedocs.org/.
 Cyclomatic Complexity Example
 -----------------------------
 
-Quick example:
+Save the following as ``example.py``:
 
-.. code-block:: sh
+.. code-block:: python
 
-    $ radon cc sympy/solvers/solvers.py -a -nc
-    sympy/solvers/solvers.py
-        F 346:0 solve - F
-        F 1093:0 _solve - F
-        F 1434:0 _solve_system - F
-        F 2647:0 unrad - F
-        F 110:0 checksol - F
-        F 2238:0 _tsolve - F
-        F 2482:0 _invert - F
-        F 1862:0 solve_linear_system - E
-        F 1781:0 minsolve_linear_system - D
-        F 1636:0 solve_linear - D
-        F 2382:0 nsolve - C
+    def classify(value):
+        if value < 0:
+            return "negative"
+        if value == 0:
+            return "zero"
+        return "positive"
 
-    11 blocks (classes, functions, methods) analyzed.
-    Average complexity: F (61.0)
+Then analyze it from the command line:
 
-Explanation:
+.. code-block:: console
 
-* ``cc`` is the radon command to compute Cyclomatic Complexity
-* ``-a`` tells radon to calculate the average complexity at the end. Note that
-  the average is computed among the *shown* blocks. If you want the total
-  average, among all the blocks, regardless of what is being shown, you should
-  use ``--total-average``.
-* ``-nc`` tells radon to print only results with a complexity rank of C or
-  worse. Other examples: ``-na`` (from A to F), or ``-nd`` (from D to F).
-* The letter *in front of* the line numbers represents the type of the block
-  (**F** means function, **M** method and **C** class).
+    $ cronenberg cc example.py -s
+    example.py
+        F 1:0 classify - A (3)
+
+The ``cc`` command computes Cyclomatic Complexity. The ``-s`` flag includes
+the numeric complexity score alongside its A–F rank.
 
 Actually it's even better: it's got colors!
 
@@ -163,63 +152,6 @@ CodeFactor
 ++++++++++++
 
 `CodeFactor <https://www.codefactor.io/>`_ uses Radon `out-of-the-box <https://support.codefactor.io/i24-analysis-tools-open-source>`_ to calculate Cyclomatic Complexity.
-
-Usage with Jupyter Notebooks
-----------------------------
-
-Radon can be used with ``.ipynb`` files to inspect code metrics for Python cells. Any ``%`` macros will be ignored in the metrics.
-
-.. note::
-
-   Jupyter Notebook support requires the optional ``nbformat`` package. To install, run ``pip install nbformat``.
-
-To enable scanning of Jupyter notebooks, add the ``--include-ipynb`` flag.
-
-To enable reporting of individual cells, add the ``--ipynb-cells`` flag.
-
-Quick example:
-
-.. code-block:: sh
-
-    $ radon raw --include-ipynb --ipynb-cells .
-    example.ipynb
-        LOC: 63
-        LLOC: 37
-        SLOC: 37
-        Comments: 3
-        Single comments: 2
-        Multi: 10
-        Blank: 14
-        - Comment Stats
-            (C % L): 5%
-            (C % S): 8%
-            (C + M % L): 21%
-    example.ipynb:[0]
-        LOC: 0
-        LLOC: 0
-        SLOC: 0
-        Comments: 0
-        Single comments: 0
-        Multi: 0
-        Blank: 0
-        - Comment Stats
-            (C % L): 0%
-            (C % S): 0%
-            (C + M % L): 0%
-    example.ipynb:[1]
-        LOC: 2
-        LLOC: 2
-        SLOC: 2
-        Comments: 0
-        Single comments: 0
-        Multi: 0
-        Blank: 0
-        - Comment Stats
-            (C % L): 0%
-            (C % S): 0%
-            (C + M % L): 0%
-
-
 
 Links
 -----

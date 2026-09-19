@@ -10,7 +10,6 @@ Unless a task explicitly changes them, preserve:
 - public Python APIs;
 - CLI output and exit codes;
 - configuration behavior;
-- notebook analysis;
 - Flake8 integration;
 - result ordering; and
 - exception behavior.

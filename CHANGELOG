@@ -78,7 +78,6 @@
 --------------------
 
 - Support file configuration overrides, thanks @tonybaloney: #179
-- Add support for analyzing Jupyter notebooks, thanks @tonybaloney: #181
 
 3.0.1 (Feb 03, 2019)
 --------------------
