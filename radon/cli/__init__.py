@@ -421,7 +421,7 @@ def log_list(lst, *args, **kwargs):
 
 def log_error(msg, *args, **kwargs):
     '''Log an error message. Arguments are the same as log().'''
-    log('{0}{1}ERROR{2}: {3}'.format(BRIGHT, RED, RESET, msg), *args, **kwargs)
+    log(f'{BRIGHT}{RED}ERROR{RESET}: {msg}', *args, **kwargs)
 
 
 @contextmanager

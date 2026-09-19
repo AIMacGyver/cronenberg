@@ -43,7 +43,7 @@ def fake_gobble_raising(fobj):
 
 def fake_run():
     for i in range(3):
-        yield {'file-{0}'.format(i): i ** 2}
+        yield {f'file-{i}': i ** 2}
 
 
 @pytest.fixture
@@ -374,7 +374,7 @@ def test_mi_as_xml(mi_config):
 def test_mi_to_terminal(mi_config, mocker):
     reset_mock = mocker.patch('radon.cli.harvest.RESET')
     ranks_mock = mocker.patch('radon.cli.harvest.MI_RANKS')
-    ranks_mock.__getitem__.side_effect = lambda j: '<|{0}|>'.format(j)
+    ranks_mock.__getitem__.side_effect = lambda j: f'<|{j}|>'
     reset_mock.__eq__.side_effect = lambda o: o == '__R__'
 
     h = harvest.MIHarvester([], mi_config)

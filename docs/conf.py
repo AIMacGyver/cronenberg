@@ -48,7 +48,7 @@ master_doc = 'index'
 # General information about the project.
 project = 'Radon'
 build_date = datetime.datetime.utcfromtimestamp(int(os.environ.get('SOURCE_DATE_EPOCH', time.time())))
-copyright = '{0}, Michele Lacchia'.format('-'.join(map(str,
+copyright = '{}, Michele Lacchia'.format('-'.join(map(str,
                                                         range(2012,
                                                               build_date.year + 1))))
 

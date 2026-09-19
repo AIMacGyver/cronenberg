@@ -209,7 +209,7 @@ def analyze(source):
             # lines
             tokens, parsed_lines = _get_all_tokens(line, lines)
         except StopIteration:
-            raise SyntaxError('SyntaxError at line: {0}'.format(lineno))
+            raise SyntaxError(f'SyntaxError at line: {lineno}')
 
         lineno += len(parsed_lines)
 

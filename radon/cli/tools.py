@@ -128,7 +128,7 @@ else:
                 except UnicodeDecodeError:
                     msg = 'invalid or missing encoding declaration'
                     if filename is not None:
-                        msg = '{} for {!r}'.format(msg, filename)
+                        msg = f'{msg} for {filename!r}'
                     raise SyntaxError(msg)
 
                 match = cookie_re.match(line_string)
@@ -142,9 +142,7 @@ else:
                     if filename is None:
                         msg = 'unknown encoding: ' + encoding
                     else:
-                        msg = 'unknown encoding for {!r}: ' '{}'.format(
-                            filename, encoding
-                        )
+                        msg = f'unknown encoding for {filename!r}: ' f'{encoding}'
                     raise SyntaxError(msg)
 
                 if bom_found:
@@ -153,9 +151,7 @@ else:
                         if filename is None:
                             msg = 'encoding problem: utf-8'
                         else:
-                            msg = 'encoding problem for ' '{!r}: utf-8'.format(
-                                filename
-                            )
+                            msg = 'encoding problem for ' f'{filename!r}: utf-8'
                         raise SyntaxError(msg)
                     encoding += '-sig'
                 return encoding
@@ -252,7 +248,7 @@ def iter_filenames(paths, exclude=None, ignore=None):
         yield '-'
         return
     exclude = exclude.split(',') if exclude else []
-    ignore = '.*,{0}'.format(ignore).split(',') if ignore else ['.*']
+    ignore = f'.*,{ignore}'.split(',') if ignore else ['.*']
     for path in paths:
         if (
             os.path.isfile(path)
@@ -337,7 +333,7 @@ def dict_to_xml(results):
             unit = et.SubElement(metric, 'unit')
             name = block['name']
             if 'classname' in block:
-                name = '{0}.{1}'.format(block['classname'], block['name'])
+                name = '{}.{}'.format(block['classname'], block['name'])
             unit.text = name
 
             et.SubElement(metric, 'classification').text = block['rank']
@@ -361,9 +357,7 @@ def dict_to_md(results):
         for block in blocks:
             raw_classname = block.get("classname")
             raw_name = block.get("name")
-            name = "{}.{}".format(
-                raw_classname,
-                raw_name) if raw_classname else block["name"]
+            name = f"{raw_classname}.{raw_name}" if raw_classname else block["name"]
             type = type_letter_map[block["type"]]
             md_string += "| {} | {} | {} | {}:{} | {} | {} |\n".format(
                 filename,
@@ -386,7 +380,7 @@ def dict_to_codeclimate_issues(results, threshold='B'):
     for path in results:
         info = results[path]
         if type(info) is dict and info.get('error'):
-            description = 'Error: {0}'.format(info.get('error', error_content))
+            description = 'Error: {}'.format(info.get('error', error_content))
             beginline = re.search(r'\d+', description)
             error_category = 'Bug Risk'
 
@@ -417,8 +411,8 @@ def dict_to_codeclimate_issues(results, threshold='B'):
                 complexity = offender['complexity']
                 category = 'Complexity'
                 description = (
-                    'Cyclomatic complexity is too high in {0} {1}. '
-                    '({2})'.format(
+                    'Cyclomatic complexity is too high in {} {}. '
+                    '({})'.format(
                         offender['type'], offender['name'], complexity
                     )
                 )
@@ -486,7 +480,7 @@ def _format_line(block, ranked, show_complexity=False):
     '''
     letter_colored = LETTERS_COLORS[block.letter] + block.letter
     rank_colored = RANKS_COLORS[ranked] + ranked
-    compl = '' if not show_complexity else ' ({0})'.format(block.complexity)
+    compl = '' if not show_complexity else f' ({block.complexity})'
     return TEMPLATE.format(
         BRIGHT,
         letter_colored,

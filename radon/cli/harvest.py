@@ -116,7 +116,7 @@ class Harvester:
                                 cellid = 0
                                 for source in cells:
                                     yield (
-                                        "{0}:[{1}]".format(name, cellid),
+                                        f"{name}:[{cellid}]",
                                         self.gobble(
                                             StringIO(strip_ipython(source))
                                         ),
@@ -374,7 +374,7 @@ class MIHarvester(Harvester):
             color = MI_RANKS[rank]
             to_show = ''
             if self.config.show:
-                to_show = ' ({0:.2f})'.format(mi['mi'])
+                to_show = ' ({:.2f})'.format(mi['mi'])
             yield '{0} - {1}{2}{3}{4}', (name, color, rank, to_show, RESET), {}
 
 
@@ -399,14 +399,14 @@ class HCHarvester(Harvester):
         """Yield lines to be printed to the terminal."""
         if self.by_function:
             for name, res in self.results:
-                yield "{}:".format(name), (), {}
+                yield f"{name}:", (), {}
                 for (name, report) in res.functions:
-                    yield "{}:".format(name), (), {"indent": 1}
+                    yield f"{name}:", (), {"indent": 1}
                     for msg in hal_report_to_terminal(report, 1):
                         yield msg
         else:
             for name, res in self.results:
-                yield "{}:".format(name), (), {}
+                yield f"{name}:", (), {}
                 for msg in hal_report_to_terminal(res.total, 0):
                     yield msg
 
@@ -429,21 +429,21 @@ class HCHarvester(Harvester):
 
 def hal_report_to_terminal(report, base_indent=0):
     """Yield lines from the HalsteadReport to print to the terminal."""
-    yield "h1: {}".format(report.h1), (), {"indent": 1 + base_indent}
-    yield "h2: {}".format(report.h2), (), {"indent": 1 + base_indent}
-    yield "N1: {}".format(report.N1), (), {"indent": 1 + base_indent}
-    yield "N2: {}".format(report.N2), (), {"indent": 1 + base_indent}
-    yield "vocabulary: {}".format(report.vocabulary), (), {
+    yield f"h1: {report.h1}", (), {"indent": 1 + base_indent}
+    yield f"h2: {report.h2}", (), {"indent": 1 + base_indent}
+    yield f"N1: {report.N1}", (), {"indent": 1 + base_indent}
+    yield f"N2: {report.N2}", (), {"indent": 1 + base_indent}
+    yield f"vocabulary: {report.vocabulary}", (), {
         "indent": 1 + base_indent
     }
-    yield "length: {}".format(report.length), (), {"indent": 1 + base_indent}
-    yield "calculated_length: {}".format(report.calculated_length), (), {
+    yield f"length: {report.length}", (), {"indent": 1 + base_indent}
+    yield f"calculated_length: {report.calculated_length}", (), {
         "indent": 1 + base_indent
     }
-    yield "volume: {}".format(report.volume), (), {"indent": 1 + base_indent}
-    yield "difficulty: {}".format(report.difficulty), (), {
+    yield f"volume: {report.volume}", (), {"indent": 1 + base_indent}
+    yield f"difficulty: {report.difficulty}", (), {
         "indent": 1 + base_indent
     }
-    yield "effort: {}".format(report.effort), (), {"indent": 1 + base_indent}
-    yield "time: {}".format(report.time), (), {"indent": 1 + base_indent}
-    yield "bugs: {}".format(report.bugs), (), {"indent": 1 + base_indent}
+    yield f"effort: {report.effort}", (), {"indent": 1 + base_indent}
+    yield f"time: {report.time}", (), {"indent": 1 + base_indent}
+    yield f"bugs: {report.bugs}", (), {"indent": 1 + base_indent}
