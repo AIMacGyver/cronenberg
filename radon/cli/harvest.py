@@ -2,7 +2,6 @@
 
 import collections
 import json
-from builtins import super
 from io import StringIO
 
 from radon.cli.colors import MI_RANKS, RANKS_COLORS, RESET
