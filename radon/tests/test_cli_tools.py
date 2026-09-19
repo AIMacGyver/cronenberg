@@ -25,7 +25,7 @@ def fake_walk(start):
     }
     yield '.', dirs, ['tox.ini', 'amod.py', 'test_all.py', 'fake.yp', 'noext']
     for d in dirs:
-        yield './{0}'.format(d), [], contents[d]
+        yield f'./{d}', [], contents[d]
 
 
 def fake_is_python_file(filename):
@@ -563,8 +563,8 @@ CC_TO_TERMINAL_CASES = [
 
 def test_cc_to_terminal():
     # do the patching
-    tools.LETTERS_COLORS = dict((l, '<!{0}!>'.format(l)) for l in 'FMC')
-    tools.RANKS_COLORS = dict((r, '<|{0}|>'.format(r)) for r in 'ABCDEF')
+    tools.LETTERS_COLORS = dict((l, f'<!{l}!>') for l in 'FMC')
+    tools.RANKS_COLORS = dict((r, f'<|{r}|>') for r in 'ABCDEF')
     tools.BRIGHT = '@'
     tools.RESET = '__R__'
 

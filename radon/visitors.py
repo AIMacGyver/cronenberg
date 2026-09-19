@@ -67,18 +67,11 @@ class Function(BaseFunc):
         '''
         if self.classname is None:
             return self.name
-        return '{0}.{1}'.format(self.classname, self.name)
+        return f'{self.classname}.{self.name}'
 
     def __str__(self):
         '''String representation of a function block.'''
-        return '{0} {1}:{2}->{3} {4} - {5}'.format(
-            self.letter,
-            self.lineno,
-            self.col_offset,
-            self.endline,
-            self.fullname,
-            self.complexity,
-        )
+        return f'{self.letter} {self.lineno}:{self.col_offset}->{self.endline} {self.fullname} - {self.complexity}'
 
 
 class Class(BaseClass):
@@ -105,14 +98,7 @@ class Class(BaseClass):
 
     def __str__(self):
         '''String representation of a class block.'''
-        return '{0} {1}:{2}->{3} {4} - {5}'.format(
-            self.letter,
-            self.lineno,
-            self.col_offset,
-            self.endline,
-            self.name,
-            self.complexity,
-        )
+        return f'{self.letter} {self.lineno}:{self.col_offset}->{self.endline} {self.name} - {self.complexity}'
 
 
 class CodeVisitor(ast.NodeVisitor):
