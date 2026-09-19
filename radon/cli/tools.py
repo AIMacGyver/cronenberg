@@ -11,7 +11,7 @@ import os
 import platform
 import re
 import sys
-import xml.etree.cElementTree as et
+import xml.etree.ElementTree as et
 from contextlib import contextmanager
 
 from radon.cli.colors import BRIGHT, LETTERS_COLORS, RANKS_COLORS, RESET, TEMPLATE
