@@ -18,13 +18,6 @@ from radon.cli.colors import BRIGHT, LETTERS_COLORS, RANKS_COLORS, RESET, TEMPLA
 from radon.complexity import cc_rank
 from radon.visitors import Function
 
-try:
-    import nbformat
-
-    SUPPORTS_IPYNB = True
-except ImportError:
-    SUPPORTS_IPYNB = False
-
 # PyPy doesn't support encoding parameter in `open()` function and works with
 # UTF-8 encoding by default
 if platform.python_implementation() == 'PyPy':
@@ -68,11 +61,7 @@ else:
 
 def _is_python_file(filename):
     '''Check if a file is a Python source file.'''
-    if (
-        filename == '-'
-        or filename.endswith('.py')
-        or (SUPPORTS_IPYNB and filename.endswith('.ipynb'))
-    ):
+    if filename == '-' or filename.endswith('.py'):
         return True
     try:
         with open(filename) as fobj:
@@ -432,7 +421,3 @@ def get_fingerprint(path, additional_parts):
     return m.hexdigest()
 
 
-def strip_ipython(code):
-    return '\n'.join(
-        [line for line in code.split('\n') if not line.startswith('%')]
-    )

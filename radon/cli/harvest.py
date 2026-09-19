@@ -3,7 +3,6 @@
 import collections
 import json
 from builtins import super
-from io import StringIO
 
 from radon.cli.colors import MI_RANKS, RANKS_COLORS, RESET
 from radon.cli.tools import (
@@ -15,7 +14,6 @@ from radon.cli.tools import (
     dict_to_xml,
     iter_filenames,
     raw_to_dict,
-    strip_ipython,
 )
 from radon.complexity import (
     add_inner_blocks,
@@ -25,13 +23,6 @@ from radon.complexity import (
 )
 from radon.metrics import h_visit, mi_rank, mi_visit
 from radon.raw import analyze
-
-try:
-    import nbformat
-
-    SUPPORTS_IPYNB = True
-except ImportError:
-    SUPPORTS_IPYNB = False
 
 
 class Harvester:
@@ -89,36 +80,7 @@ class Harvester:
         for name in self._iter_filenames():
             with _open(name) as fobj:
                 try:
-                    if name.endswith('.ipynb'):
-                        if SUPPORTS_IPYNB and self.config.include_ipynb:
-                            nb = nbformat.read(
-                                fobj, as_version=nbformat.NO_CONVERT
-                            )
-                            cells = [
-                                cell.source
-                                for cell in nb.cells
-                                if cell.cell_type == 'code'
-                            ]
-                            # Whole document
-                            doc = "\n".join(cells)
-                            yield (
-                                name,
-                                self.gobble(StringIO(strip_ipython(doc))),
-                            )
-
-                            if self.config.ipynb_cells:
-                                # Individual cells
-                                cellid = 0
-                                for source in cells:
-                                    yield (
-                                        f"{name}:[{cellid}]",
-                                        self.gobble(
-                                            StringIO(strip_ipython(source))
-                                        ),
-                                    )
-                                    cellid += 1
-                    else:
-                        yield (name, self.gobble(fobj))
+                    yield (name, self.gobble(fobj))
                 except Exception as e:
                     yield (name, {'error': str(e)})
 

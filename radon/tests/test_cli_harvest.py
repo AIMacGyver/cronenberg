@@ -12,8 +12,6 @@ from radon.cli import Config
 BASE_CONFIG = Config(
     exclude=r'test_[^.]+\.py',
     ignore='tests,docs',
-    include_ipynb=False,
-    ipynb_cells=False,
 )
 
 CC_CONFIG = Config(

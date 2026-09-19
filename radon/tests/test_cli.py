@@ -105,8 +105,6 @@ def test_cc(mocker, log_mock):
             no_assert=False,
             total_average=False,
             show_closures=False,
-            include_ipynb=False,
-            ipynb_cells=False,
         ),
     )
     log_mock.assert_called_once_with(
@@ -131,8 +129,6 @@ def test_raw(mocker, log_mock):
             exclude=None,
             ignore=None,
             summary=True,
-            include_ipynb=False,
-            ipynb_cells=False,
         ),
     )
     log_mock.assert_called_once_with(
@@ -156,8 +152,6 @@ def test_mi(mocker, log_mock):
             show=True,
             multi=False,
             sort=False,
-            include_ipynb=False,
-            ipynb_cells=False,
         ),
     )
     log_mock.assert_called_once_with(

@@ -48,7 +48,6 @@ Source = "https://github.com/rubik/radon"
 
 [dependency-groups]
 dev = [
-    "nbformat",
     "pre-commit",
     "pytest",
     "pytest-mock",
