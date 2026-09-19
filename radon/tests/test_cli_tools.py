@@ -3,6 +3,7 @@ import os
 import platform
 import sys
 
+import nbformat
 import pytest
 
 import radon.cli.tools as tools
@@ -34,6 +35,11 @@ def fake_is_python_file(filename):
 def assert_pequal(a, b):
     a, b = [list(map(os.path.normpath, p)) for p in (a, b)]
     assert a == b
+
+
+def test_nbformat_availability_probe():
+    assert tools.SUPPORTS_IPYNB is True
+    assert tools.nbformat is nbformat
 
 
 def test_open(mocker):
