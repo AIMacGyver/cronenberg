@@ -1,4 +1,3 @@
-import sys
 import textwrap
 
 import pytest
@@ -407,10 +406,8 @@ MATCH_STATEMENT_BLOCKS = [
 ]
 
 BLOCKS = SIMPLE_BLOCKS[:]
-if sys.version_info[:2] >= (2, 7):
-    BLOCKS.extend(ADDITIONAL_BLOCKS)
-if sys.version_info[:2] >= (3, 10):
-    BLOCKS.extend(MATCH_STATEMENT_BLOCKS)
+BLOCKS.extend(ADDITIONAL_BLOCKS)
+BLOCKS.extend(MATCH_STATEMENT_BLOCKS)
 
 
 @pytest.mark.parametrize('code,expected,kwargs', BLOCKS)
@@ -462,19 +459,17 @@ SINGLE_FUNCTIONS_CASES = [
     ),
 ]
 
-if sys.version_info[:2] >= (3, 5):
-    # With and async-with statements no longer count towards CC, see #123
-    SINGLE_FUNCTIONS_CASES.append(
-        (
-            '''
+SINGLE_FUNCTIONS_CASES.append(
+    (
+        '''
          async def f(a, b):
             async with open('blabla.log', 'w') as f:
                 async for i in range(100):
                     f.write(str(i) + '\\n')
          ''',
-            (1, 2),
-        ),
-    )
+        (1, 2),
+    ),
+)
 
 
 @pytest.mark.parametrize('code,expected', SINGLE_FUNCTIONS_CASES)

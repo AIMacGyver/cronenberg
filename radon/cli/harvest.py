@@ -2,8 +2,8 @@
 
 import collections
 import json
-import sys
 from builtins import super
+from io import StringIO
 
 from radon.cli.colors import MI_RANKS, RANKS_COLORS, RESET
 from radon.cli.tools import (
@@ -25,11 +25,6 @@ from radon.complexity import (
 )
 from radon.metrics import h_visit, mi_rank, mi_visit
 from radon.raw import analyze
-
-if sys.version_info[0] < 3:
-    from StringIO import StringIO
-else:
-    from io import StringIO
 
 try:
     import nbformat

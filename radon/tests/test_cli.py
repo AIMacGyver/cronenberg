@@ -175,10 +175,7 @@ def test_encoding(mocker, log_mock):
         RawHarvester: raw_cfg,
         CCHarvester: CC_CONFIG,
     }
-    if sys.version_info[0] < 3:
-        target = 'data/__init__.py'
-    else:
-        target = 'data/py3unicode.py'
+    target = 'data/py3unicode.py'
     fnames = [
         os.path.join(DIRNAME, target),
         # This one will fail if detect_encoding() removes the first lines
