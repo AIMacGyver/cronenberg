@@ -6,6 +6,7 @@ import sys
 from contextlib import contextmanager
 
 from mando import Program
+
 try:
     # Python 3.11+
     import tomllib
