@@ -201,7 +201,7 @@ def analyze(source):
     Python interpreter, they are not comments but strings.
     '''
     lloc = comments = single_comments = multi = blank = sloc = 0
-    lines = (l.strip() for l in source.splitlines())
+    lines = (source_line.strip() for source_line in source.splitlines())
     lineno = 1
     for line in lines:
         try:
@@ -229,8 +229,8 @@ def analyze(source):
                 # multiline docstrings
                 single_comments += 1
             else:
-                multi += sum(1 for l in parsed_lines if l)  # Skip empty lines
-                blank += sum(1 for l in parsed_lines if not l)
+                multi += sum(1 for parsed_line in parsed_lines if parsed_line)  # Skip empty lines
+                blank += sum(1 for parsed_line in parsed_lines if not parsed_line)
         else:  # Everything else is either code or blank lines
             for parsed_line in parsed_lines:
                 if parsed_line:
