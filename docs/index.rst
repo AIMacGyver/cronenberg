@@ -50,7 +50,6 @@ Contents:
 
    intro
    commandline
-   flake8
    api
    changelog
 
@@ -61,4 +60,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

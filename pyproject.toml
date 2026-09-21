@@ -36,9 +36,6 @@ toml = ["tomli>=2.0.1"]
 [project.scripts]
 cronenberg = "radon:main"
 
-[project.entry-points."flake8.extension"]
-R70 = "radon.contrib.flake8:Flake8Checker"
-
 [project.entry-points."setuptools.installation"]
 eggsecutable = "radon:main"
 

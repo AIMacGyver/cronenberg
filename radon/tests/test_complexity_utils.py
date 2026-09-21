@@ -1,4 +1,3 @@
-import ast
 import operator
 
 import pytest
@@ -13,7 +12,6 @@ from radon.complexity import (
     cc_visit,
     sorted_results,
 )
-from radon.contrib.flake8 import Flake8Checker
 from radon.visitors import Class, Function
 
 from .test_complexity_visitor import GENERAL_CASES, dedent
@@ -133,12 +131,3 @@ def test_cc_visit(code, number_of_blocks, diff, lookfor):
     names = set(map(operator.attrgetter('name'), with_inner_blocks))
     assert len(with_inner_blocks) - len(blocks) == diff
     assert lookfor in names
-
-
-def test_flake8_checker():
-    c = Flake8Checker(ast.parse(dedent(GENERAL_CASES[0][0])), 'test case')
-    assert c.max_cc == -1
-    assert c.no_assert is False
-    assert list(c.run()) == []
-    c.max_cc = 3
-    assert list(c.run()) == [(7, 0, 'R701 \'f\' is too complex (4)', type(c))]
