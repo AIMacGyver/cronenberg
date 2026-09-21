@@ -16,7 +16,7 @@
 - [ ] Radon-compatible behavior is preserved, or intentional changes are
       explained below.
 
-<!-- Note API, CLI, configuration, Flake8, ordering, or exception impact. -->
+<!-- Note API, CLI, configuration, ordering, or exception impact. -->
 
 ## Documentation and changelog
 

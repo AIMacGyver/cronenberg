@@ -50,7 +50,6 @@ Contents:
 
    intro
    commandline
-   flake8
    api
    changelog
 

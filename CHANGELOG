@@ -20,18 +20,6 @@
 - Allow forcing colored output on/off, thanks @msabramo: #218
 - Synchronize trove classifiers with tested versions, thanks @D3X: #222
 
-5.0.1 (Jun 08, 2021)
---------------------
-
-- Drop support for flake8 < 3.x (removes `flake8-polyfill` dependency), by
-  @joxl: #219
-
-4.5.2 (May 23, 2021)
---------------------
-
-- Add back `flake8-polyfill` dependency because conditional extra does not work
-  as intended, reported by @joxl: #217
-
 4.5.1 (May 09, 2021)
 --------------------
 
@@ -51,16 +39,6 @@
 
 - Use utf-8 as the default encoding on Python 3.0+: #203
 - Allow custom config file path through the RADONCFG env var: #207
-
-4.3.2 (Sep 18, 2020)
---------------------
-
-- Move `Flake8Checker` to separate, isolated module (thanks to @tribals): #200
-
-4.3.1 (Sep 12, 2020)
---------------------
-
-- Separate `flake8-polyfill` to extra requirements (thanks to @tribals): #189
 
 4.2.0 (Jan 28, 2020)
 --------------------
@@ -112,11 +90,6 @@
 - Add --functions to `radon hal` (thanks @rwbogl): #147
 - Add documentation for the `radon hal` subcommand (thanks @rwbogl): #150
 
-2.2.0 (Jan 11, 2018)
---------------------
-
-- Add an option to show closures when Radon is used from flake8: #135
-
 2.1.1 (Sep 07, 2017)
 --------------------
 
@@ -132,11 +105,6 @@
 --------------------
 
 - Update mando dependency: #120
-
-2.0.1 (Jun 02, 2017)
---------------------
-
-- Fix bug in the error message of Flake8's plugin: #121
 
 2.0.0 (May 30, 2017)
 --------------------
@@ -156,12 +124,6 @@
 - Use UTF-8 or RADONFILESENCODING to open files: #86
 - Fix raw analysis bug on docstrings: #106
 
-1.4.2 (Jul 26, 2016)
---------------------
-
-- Use flake8-polyfill in order to keep compatibility with Flake8 2.x and 3.x:
-  #92
-
 1.4.0 (Jun 03, 2016)
 --------------------
 
@@ -175,11 +137,6 @@
 - Modify behaviour of ``--show-closures``. Now inner classes are added to the
   output as well: #79.
 - Fix bug in ``is_multiline_string``: #81.
-
-1.2.2 (Jul 09, 2015)
---------------------
-
-- Add plugin for flake8 tool: #76.
 
 1.2.1 (May 07, 2015)
 --------------------
