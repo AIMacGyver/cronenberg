@@ -17,9 +17,7 @@ def test_standalone_python_analysis():
     blocks = cc_visit(SOURCE)
     metrics = analyze(SOURCE)
 
-    assert [(block.name, block.complexity) for block in blocks] == [
-        ("classify", 3)
-    ]
+    assert [(block.name, block.complexity) for block in blocks] == [("classify", 3)]
     assert metrics.sloc == 6
 
 
@@ -34,16 +32,10 @@ def test_standalone_cli_analysis(tmp_path):
         text=True,
     )
 
-    assert result.stdout == (
-        f"{source_path}\n"
-        "    F 1:0 classify - A (3)\n"
-    )
+    assert result.stdout == (f"{source_path}\n    F 1:0 classify - A (3)\n")
 
 
 def test_installed_metadata_has_no_removed_plugin_entry_point():
     removed_group = "flake" + "8.extension"
 
-    assert all(
-        entry_point.group != removed_group
-        for entry_point in distribution("cronenberg").entry_points
-    )
+    assert all(entry_point.group != removed_group for entry_point in distribution("cronenberg").entry_points)
