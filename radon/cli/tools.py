@@ -257,4 +257,3 @@ def _format_line(block, ranked, show_complexity=False):
         compl,
         reset=RESET,
     )
-
