@@ -77,7 +77,6 @@ Usage
 -----
 
 Radon can be used either from the command line or programmatically.
-Documentation sources are available in the ``docs`` directory.
 
 Cyclomatic Complexity Example
 -----------------------------
@@ -159,6 +158,5 @@ CodeFactor
 Links
 -----
 
-* Documentation sources: ``docs/``
 * PyPI: http://pypi.python.org/pypi/radon
 * Issue Tracker: https://github.com/rubik/radon/issues
