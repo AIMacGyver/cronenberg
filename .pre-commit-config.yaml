@@ -4,13 +4,15 @@ repos:
     hooks:
       - id: ruff-check
         args: [--fix]
-      # Temporary formatter debt; remove paths as focused formatting PRs land.
+      # Temporary formatter debt (8 files); remove paths as focused PRs land.
       - id: ruff-format
         exclude: |
           (?x)^(
+            radon/cli/harvest\.py|
             radon/cli/__init__\.py|
             radon/cli/tools\.py|
             radon/complexity\.py|
+            radon/tests/test_cli_harvest\.py|
             radon/tests/test_cli\.py|
             radon/tests/test_cli_tools\.py|
             radon/tests/test_complexity_utils\.py

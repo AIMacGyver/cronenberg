@@ -21,9 +21,9 @@ Complete every field:
 **Out of scope** — adjacent work and cleanup that this task will not include.
 
 **Compatibility risks** — identify any possible effect on public Python APIs,
-CLI output or exit codes, configuration behavior, notebook analysis, Flake8
-integration, result ordering, or exception behavior. Write "none expected"
-only after considering each relevant boundary.
+CLI output or exit codes, configuration behavior, Flake8 integration, result
+ordering, or exception behavior. Write "none expected" only after considering
+each relevant boundary.
 
 **Done** — observable completion criteria. Name the expected behavior or
 artifact and the commands that will verify it.
