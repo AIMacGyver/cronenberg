@@ -30,17 +30,11 @@ classifiers = [
     "Topic :: Utilities",
 ]
 
-[project.optional-dependencies]
-toml = ["tomli>=2.0.1"]
-
 [project.scripts]
 cronenberg = "radon:main"
 
-[project.entry-points."setuptools.installation"]
-eggsecutable = "radon:main"
-
 [project.urls]
-Source = "https://github.com/rubik/radon"
+Source = "https://github.com/AIMacGyver/cronenberg"
 
 [dependency-groups]
 dev = [
