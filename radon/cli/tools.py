@@ -5,11 +5,8 @@ Attributes:
 '''
 
 import fnmatch
-import hashlib
-import json
 import os
 import platform
-import re
 import sys
 import xml.etree.ElementTree as et
 from contextlib import contextmanager
@@ -208,75 +205,6 @@ def dict_to_md(results):
     return md_string
 
 
-def dict_to_codeclimate_issues(results, threshold='B'):
-    '''Convert a dictionary holding CC analysis results into Code Climate
-     issue json.'''
-    codeclimate_issues = []
-    content = get_content()
-    error_content = 'We encountered an error attempting to analyze this line.'
-
-    for path in results:
-        info = results[path]
-        if type(info) is dict and info.get('error'):
-            description = 'Error: {}'.format(info.get('error', error_content))
-            beginline = re.search(r'\d+', description)
-            error_category = 'Bug Risk'
-
-            if beginline:
-                beginline = int(beginline.group())
-            else:
-                beginline = 1
-
-            endline = beginline
-            remediation_points = 1000000
-            fingerprint = get_fingerprint(path, ['error'])
-            codeclimate_issues.append(
-                format_cc_issue(
-                    path,
-                    description,
-                    error_content,
-                    error_category,
-                    beginline,
-                    endline,
-                    remediation_points,
-                    fingerprint,
-                )
-            )
-        else:
-            for offender in info:
-                beginline = offender['lineno']
-                endline = offender['endline']
-                complexity = offender['complexity']
-                category = 'Complexity'
-                description = (
-                    'Cyclomatic complexity is too high in {} {}. '
-                    '({})'.format(
-                        offender['type'], offender['name'], complexity
-                    )
-                )
-                remediation_points = get_remediation_points(
-                    complexity, threshold
-                )
-                fingerprint = get_fingerprint(
-                    path, [offender['type'], offender['name']]
-                )
-
-                if remediation_points > 0:
-                    codeclimate_issues.append(
-                        format_cc_issue(
-                            path,
-                            description,
-                            content,
-                            category,
-                            beginline,
-                            endline,
-                            remediation_points,
-                            fingerprint,
-                        )
-                    )
-    return codeclimate_issues
-
-
 def cc_to_terminal(results, show_complexity, min, max, total_average):
     '''Transform Cyclomatic Complexity results into a 3-elements tuple:
 
@@ -330,93 +258,3 @@ def _format_line(block, ranked, show_complexity=False):
         reset=RESET,
     )
 
-
-def format_cc_issue(
-    path,
-    description,
-    content,
-    category,
-    beginline,
-    endline,
-    remediation_points,
-    fingerprint,
-):
-    '''Return properly formatted Code Climate issue json.'''
-    issue = {
-        'type': 'issue',
-        'check_name': 'Complexity',
-        'description': description,
-        'content': {'body': content,},
-        'categories': [category],
-        'fingerprint': fingerprint,
-        'location': {
-            'path': path,
-            'lines': {'begin': beginline, 'end': endline,},
-        },
-        'remediation_points': remediation_points,
-    }
-    return json.dumps(issue)
-
-
-def get_remediation_points(complexity, grade_threshold):
-    '''Calculate quantity of remediation work needed to reduce complexity to grade
-    threshold permitted.'''
-    grade_to_max_permitted_cc = {
-        'B': 5,
-        'C': 10,
-        'D': 20,
-        'E': 30,
-        'F': 40,
-    }
-
-    threshold = grade_to_max_permitted_cc.get(grade_threshold, 5)
-
-    if complexity and complexity > threshold:
-        return 1000000 + 100000 * (complexity - threshold)
-    else:
-        return 0
-
-
-def get_content():
-    '''Return explanation string for Code Climate issue document.'''
-    content = [
-        '##Cyclomatic Complexity',
-        'Cyclomatic Complexity corresponds to the number of decisions '
-        'a block of code contains plus 1. This number (also called '
-        'McCabe number) is equal to the number of linearly independent '
-        'paths through the code. This number can be used as a guide '
-        'when testing conditional logic in blocks.\n',
-        'Radon analyzes the AST tree of a Python program to compute '
-        'Cyclomatic Complexity. Statements have the following effects '
-        'on Cyclomatic Complexity:\n\n',
-        '| Construct | Effect on CC | Reasoning |',
-        '| --------- | ------------ | --------- |',
-        '| if | +1 | An *if* statement is a single decision. |',
-        '| elif| +1| The *elif* statement adds another decision. |',
-        '| else| +0| The *else* statement does not cause a new '
-        'decision. The decision is at the *if*. |',
-        '| for| +1| There is a decision at the start of the loop. |',
-        '| while| +1| There is a decision at the *while* statement. |',
-        '| except| +1| Each *except* branch adds a new conditional '
-        'path of execution. |',
-        '| finally| +0| The finally block is unconditionally ' 'executed. |',
-        '| with| +1| The *with* statement roughly corresponds to a '
-        'try/except block (see PEP 343 for details). |',
-        '| assert| +1| The *assert* statement internally roughly '
-        'equals a conditional statement. |',
-        '| Comprehension| +1| A list/set/dict comprehension of '
-        'generator expression is equivalent to a for loop. |',
-        '| Boolean Operator| +1| Every boolean operator (and, or) '
-        'adds a decision point. |\n',
-        'Source: http://radon.readthedocs.org/en/latest/intro.html',
-    ]
-    return '\n'.join(content)
-
-
-def get_fingerprint(path, additional_parts):
-    '''Return fingerprint string for Code Climate issue document.'''
-    m = hashlib.md5()
-    parts = [path, 'Complexity'] + additional_parts
-    key = '|'.join(parts)
-    m.update(key.encode('utf-8'))
-    return m.hexdigest()

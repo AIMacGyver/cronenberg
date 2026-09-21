@@ -106,7 +106,6 @@ def cc(
     total_average=_cfg.get_value('total_average', bool, False),
     xml=False,
     md=False,
-    codeclimate=False,
     output_file=_cfg.get_value('output_file', str, None),
 ):
     '''Analyze the given Python modules and compute Cyclomatic
@@ -136,7 +135,6 @@ def cc(
     :param -j, --json: Format results in JSON.
     :param --xml: Format results in XML (compatible with CCM).
     :param --md: Format results in Markdown.
-    :param --codeclimate: Format results for Code Climate.
     :param --no-assert: Do not count `assert` statements when computing
         complexity.
     :param --show-closures: Add closures/inner classes to the output.
@@ -161,7 +159,6 @@ def cc(
             json=json,
             xml=xml,
             md=md,
-            codeclimate=codeclimate,
             stream=stream,
         )
 
@@ -337,22 +334,14 @@ def log_result(harvester, **kwargs):
 
     Keywords parameters determine how the results are formatted. If *json* is
     `True`, then `harvester.as_json()` is called. If *xml* is `True`, then
-    `harvester.as_xml()` is called. If *codeclimate* is True, then
-    `harvester.as_codeclimate_issues()` is called.
-    Otherwise, `harvester.to_terminal()` is executed and `kwargs` is directly
-    passed to the :func:`~radon.cli.log` function.
+    `harvester.as_xml()` is called. Otherwise, `harvester.to_terminal()` is
+    executed and `kwargs` is directly passed to the
+    :func:`~radon.cli.log` function.
     '''
     if kwargs.get('json'):
         log(harvester.as_json(), noformat=True, **kwargs)
     elif kwargs.get('xml'):
         log(harvester.as_xml(), noformat=True, **kwargs)
-    elif kwargs.get('codeclimate'):
-        log_list(
-            harvester.as_codeclimate_issues(),
-            delimiter='\0',
-            noformat=True,
-            **kwargs
-        )
     elif kwargs.get('md'):
         log(harvester.as_md(), noformat=True, **kwargs)
     else:
