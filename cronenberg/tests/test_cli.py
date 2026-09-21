@@ -5,10 +5,10 @@ from configparser import ConfigParser
 
 import pytest
 
-import radon.cli as cli
-import radon.complexity as cc_mod
-from radon.cli.harvest import CCHarvester, Harvester, MIHarvester, RawHarvester
-from radon.tests.test_cli_harvest import (
+import cronenberg.cli as cli
+import cronenberg.complexity as cc_mod
+from cronenberg.cli.harvest import CCHarvester, Harvester, MIHarvester, RawHarvester
+from cronenberg.tests.test_cli_harvest import (
     BASE_CONFIG,
     CC_CONFIG,
     MI_CONFIG,
@@ -77,7 +77,7 @@ def test_config_converts_types(mocker):
         bool_test = true
         '''
     )
-    config_mock = mocker.patch('radon.cli.FileConfig.file_config')
+    config_mock = mocker.patch('cronenberg.cli.FileConfig.file_config')
     config_mock.return_value = test_config
 
     cfg = cli.FileConfig()
@@ -134,7 +134,7 @@ def test_file_config_applies_tool_radon_defaults(monkeypatch, tmp_path):
 
 
 def test_cc(mocker, log_mock):
-    harv_mock = mocker.patch('radon.cli.CCHarvester')
+    harv_mock = mocker.patch('cronenberg.cli.CCHarvester')
     harv_mock.return_value = mocker.sentinel.harvester
 
     cli.cc(['-'], json=True)
@@ -164,7 +164,7 @@ def test_cc(mocker, log_mock):
 
 
 def test_raw(mocker, log_mock):
-    harv_mock = mocker.patch('radon.cli.RawHarvester')
+    harv_mock = mocker.patch('cronenberg.cli.RawHarvester')
     harv_mock.return_value = mocker.sentinel.harvester
 
     cli.raw(['-'], summary=True, json=True)
@@ -183,7 +183,7 @@ def test_raw(mocker, log_mock):
 
 
 def test_mi(mocker, log_mock):
-    harv_mock = mocker.patch('radon.cli.MIHarvester')
+    harv_mock = mocker.patch('cronenberg.cli.MIHarvester')
     harv_mock.return_value = mocker.sentinel.harvester
 
     cli.mi(['-'], show=True, multi=False)
@@ -232,7 +232,7 @@ def test_encoding(mocker, log_mock):
 
 @pytest.fixture
 def stdout_mock(mocker):
-    return mocker.patch('radon.cli.sys.stdout.write')
+    return mocker.patch('cronenberg.cli.sys.stdout.write')
 
 
 def test_log(mocker, stdout_mock):
@@ -260,9 +260,9 @@ def test_log_list(stdout_mock):
 
 
 def test_log_error(mocker, stdout_mock):
-    reset_mock = mocker.patch('radon.cli.RESET')
-    red_mock = mocker.patch('radon.cli.RED')
-    bright_mock = mocker.patch('radon.cli.BRIGHT')
+    reset_mock = mocker.patch('cronenberg.cli.RESET')
+    red_mock = mocker.patch('cronenberg.cli.RED')
+    bright_mock = mocker.patch('cronenberg.cli.BRIGHT')
 
     bright_mock.__str__.return_value = '@'
     red_mock.__str__.return_value = '<|||>'
@@ -274,9 +274,9 @@ def test_log_error(mocker, stdout_mock):
 
 
 def test_log_result(mocker, stdout_mock):
-    le_mock = mocker.patch('radon.cli.log_error')
-    ll_mock = mocker.patch('radon.cli.log_list')
-    log_mock = mocker.patch('radon.cli.log')
+    le_mock = mocker.patch('cronenberg.cli.log_error')
+    ll_mock = mocker.patch('cronenberg.cli.log_list')
+    log_mock = mocker.patch('cronenberg.cli.log')
 
     h = mocker.Mock(spec=Harvester)
     h.as_json.return_value = mocker.sentinel.json

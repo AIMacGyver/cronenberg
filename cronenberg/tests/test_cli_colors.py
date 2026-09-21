@@ -1,4 +1,4 @@
-import radon.cli.colors as colors
+import cronenberg.cli.colors as colors
 
 
 def test_color_enabled_yes(monkeypatch):

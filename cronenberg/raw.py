@@ -1,6 +1,6 @@
 '''This module contains functions related to raw metrics.
 
-The main function is :func:`~radon.raw.analyze`, and should be the only one
+The main function is :func:`~cronenberg.raw.analyze`, and should be the only one
 that is used.
 '''
 

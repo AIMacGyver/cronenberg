@@ -2,8 +2,8 @@ import textwrap
 
 import pytest
 
-from radon.raw import OP, Module, _find, _generate, _logical, analyze
-from radon.tests.data import fun as unicode_source_fixture
+from cronenberg.raw import OP, Module, _find, _generate, _logical, analyze
+from cronenberg.tests.data import fun as unicode_source_fixture
 
 
 def dedent(code):

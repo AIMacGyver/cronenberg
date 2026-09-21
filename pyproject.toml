@@ -31,7 +31,7 @@ classifiers = [
 ]
 
 [project.scripts]
-cronenberg = "radon:main"
+cronenberg = "cronenberg:main"
 
 [project.urls]
 Source = "https://github.com/AIMacGyver/cronenberg"
@@ -52,10 +52,10 @@ target-version = "py311"
 select = ["E", "F", "I", "UP"]
 
 [tool.pytest.ini_options]
-testpaths = ["radon/tests"]
+testpaths = ["cronenberg/tests"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["radon"]
+packages = ["cronenberg"]
 
 [build-system]
 requires = ["hatchling"]

@@ -1,8 +1,8 @@
 import subprocess
 from importlib.metadata import distribution
 
-from radon.complexity import cc_visit
-from radon.raw import analyze
+from cronenberg.complexity import cc_visit
+from cronenberg.raw import analyze
 
 SOURCE = """def classify(value):
     if value < 0:
@@ -53,7 +53,9 @@ def test_installed_metadata_keeps_runtime_deps_without_obsolete_hooks():
     assert all("tomli" not in requirement for requirement in requirements)
     assert any(requirement.startswith("mando") for requirement in requirements)
     assert any(requirement.startswith("colorama") for requirement in requirements)
-    assert [(entry_point.name, entry_point.value) for entry_point in console_scripts] == [("cronenberg", "radon:main")]
+    assert [(entry_point.name, entry_point.value) for entry_point in console_scripts] == [
+        ("cronenberg", "cronenberg:main"),
+    ]
 
 
 def test_installed_metadata_has_no_removed_plugin_entry_point():
