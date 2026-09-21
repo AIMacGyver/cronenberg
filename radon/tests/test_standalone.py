@@ -35,6 +35,27 @@ def test_standalone_cli_analysis(tmp_path):
     assert result.stdout == (f"{source_path}\n    F 1:0 classify - A (3)\n")
 
 
+def test_source_metadata_points_at_this_repository():
+    project_urls = distribution("cronenberg").metadata.get_all("Project-URL") or []
+
+    assert "Source, https://github.com/AIMacGyver/cronenberg" in project_urls
+    assert all("github.com/rubik/radon" not in url for url in project_urls)
+
+
+def test_installed_metadata_keeps_runtime_deps_without_obsolete_hooks():
+    dist = distribution("cronenberg")
+    requirements = dist.requires or []
+    console_scripts = [entry_point for entry_point in dist.entry_points if entry_point.group == "console_scripts"]
+
+    assert all(entry_point.group != "setuptools.installation" for entry_point in dist.entry_points)
+    assert all(entry_point.name != "eggsecutable" for entry_point in dist.entry_points)
+    assert "toml" not in (dist.metadata.get_all("Provides-Extra") or [])
+    assert all("tomli" not in requirement for requirement in requirements)
+    assert any(requirement.startswith("mando") for requirement in requirements)
+    assert any(requirement.startswith("colorama") for requirement in requirements)
+    assert [(entry_point.name, entry_point.value) for entry_point in console_scripts] == [("cronenberg", "radon:main")]
+
+
 def test_installed_metadata_has_no_removed_plugin_entry_point():
     removed_group = "flake" + "8.extension"
 
