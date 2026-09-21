@@ -18,7 +18,7 @@ from cronenberg.cli.harvest import (
     RawHarvester,
 )
 
-CONFIG_SECTION_NAME = 'radon'
+CONFIG_SECTION_NAME = 'cronenberg'
 
 
 class FileConfig:
@@ -62,11 +62,11 @@ class FileConfig:
     def file_config():
         '''Return any file configuration discovered'''
         config = configparser.ConfigParser()
-        for path in (os.getenv('RADONCFG', None), 'radon.cfg'):
+        for path in (os.getenv('CRONENBERGCFG', None), 'cronenberg.cfg'):
             if path is not None and os.path.exists(path):
                 config.read_file(open(path))
         config.read_dict(FileConfig.toml_config())
-        config.read(['setup.cfg', os.path.expanduser('~/.radon.cfg')])
+        config.read(['setup.cfg', os.path.expanduser('~/.cronenberg.cfg')])
         return config
 
 

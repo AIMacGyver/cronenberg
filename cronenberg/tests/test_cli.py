@@ -71,7 +71,7 @@ def test_config_converts_types(mocker):
     test_config = ConfigParser()
     test_config.read_string(
         '''
-        [radon]
+        [cronenberg]
         str_test = B
         int_test = 19
         bool_test = true
@@ -100,11 +100,11 @@ def test_config_converts_types(mocker):
 def test_toml_config_uses_stdlib_loader(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
     (tmp_path / 'pyproject.toml').write_bytes(
-        b'[tool.radon]\ncc_min = "B"\n'
+        b'[tool.cronenberg]\ncc_min = "B"\n'
     )
 
     assert cli.tomllib is tomllib
-    assert cli.FileConfig.toml_config() == {'radon': {'cc_min': 'B'}}
+    assert cli.FileConfig.toml_config() == {'cronenberg': {'cc_min': 'B'}}
 
 
 def test_toml_config_missing_or_without_tool_section(monkeypatch, tmp_path):
@@ -123,11 +123,11 @@ def test_toml_config_invalid_document_raises(monkeypatch, tmp_path):
         cli.FileConfig.toml_config()
 
 
-def test_file_config_applies_tool_radon_defaults(monkeypatch, tmp_path):
+def test_file_config_applies_tool_cronenberg_defaults(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
     monkeypatch.setenv('HOME', str(tmp_path))
-    monkeypatch.delenv('RADONCFG', raising=False)
-    (tmp_path / 'pyproject.toml').write_bytes(b'[tool.radon]\ncc_min = "C"\n')
+    monkeypatch.delenv('CRONENBERGCFG', raising=False)
+    (tmp_path / 'pyproject.toml').write_bytes(b'[tool.cronenberg]\ncc_min = "C"\n')
 
     cfg = cli.FileConfig()
     assert cfg.get_value('cc_min', str, 'A') == 'C'
