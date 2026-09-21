@@ -77,7 +77,7 @@ Usage
 -----
 
 Radon can be used either from the command line or programmatically.
-Documentation is at https://radon.readthedocs.org/.
+Documentation sources are available in the ``docs`` directory.
 
 Cyclomatic Complexity Example
 -----------------------------
@@ -144,14 +144,6 @@ Codacy
 
 `Codacy <https://www.codacy.com/>`_ uses Radon `by default <https://support.codacy.com/hc/en-us/articles/213632009-Engines#other-tools>`_ to calculate metrics from the source code.
 
-Code Climate
-++++++++++++
-
-Radon is available as a `Code Climate Engine <https://docs.codeclimate.com/docs/list-of-engines>`_.
-To understand how to add Radon's checks to your Code Climate Platform, head
-over to their documentation:
-https://docs.codeclimate.com/v1.0/docs/radon
-
 coala Analyzer
 ++++++++++++++
 
@@ -167,6 +159,6 @@ CodeFactor
 Links
 -----
 
-* Documentation: https://radon.readthedocs.org
+* Documentation sources: ``docs/``
 * PyPI: http://pypi.python.org/pypi/radon
 * Issue Tracker: https://github.com/rubik/radon/issues

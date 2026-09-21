@@ -39,3 +39,18 @@ def test_installed_metadata_has_no_removed_plugin_entry_point():
     removed_group = "flake" + "8.extension"
 
     assert all(entry_point.group != removed_group for entry_point in distribution("cronenberg").entry_points)
+
+
+def test_removed_hosted_integration_is_absent():
+    help_result = subprocess.run(
+        ["cronenberg", "cc", "--help"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    removed_option = "--code" + "climate"
+    removed_host = "read" + "thedocs"
+    project_urls = distribution("cronenberg").metadata.get_all("Project-URL") or []
+
+    assert removed_option not in help_result.stdout
+    assert all(removed_host not in url.lower() for url in project_urls)

@@ -8,7 +8,6 @@ from radon.cli.tools import (
     _open,
     cc_to_dict,
     cc_to_terminal,
-    dict_to_codeclimate_issues,
     dict_to_md,
     dict_to_xml,
     iter_filenames,
@@ -115,10 +114,6 @@ class Harvester:
         '''Format the results as Markdown.'''
         raise NotImplementedError
 
-    def as_codeclimate_issues(self):
-        '''Format the results as Code Climate issues.'''
-        raise NotImplementedError
-
     def to_terminal(self):
         '''Yields tuples representing lines to be printed to a terminal.
 
@@ -167,10 +162,6 @@ class CCHarvester(Harvester):
     def as_md(self):
         '''Format the results as Markdown.'''
         return dict_to_md(self._to_dicts())
-
-    def as_codeclimate_issues(self):
-        '''Format the result as Code Climate issues.'''
-        return dict_to_codeclimate_issues(self._to_dicts(), self.config.min)
 
     def to_terminal(self):
         '''Yield lines to be printed in a terminal.'''

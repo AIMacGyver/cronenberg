@@ -40,7 +40,6 @@ cronenberg = "radon:main"
 eggsecutable = "radon:main"
 
 [project.urls]
-Documentation = "https://radon.readthedocs.org/"
 Source = "https://github.com/rubik/radon"
 
 [dependency-groups]
