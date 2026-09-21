@@ -5,8 +5,8 @@ Cronenberg
 
     **Project status:** Cronenberg is an experimental modernization of
     `Radon <https://github.com/rubik/radon>`__. It currently focuses on
-    packaging, developer tooling, and infrastructure while preserving
-    behavior. Cronenberg is not an official Radon replacement.
+    packaging, developer tooling, and infrastructure. Metric output stays
+    compatible with Radon. Cronenberg is not an official Radon replacement.
 
 Cronenberg computes metrics from Python source code:
 
@@ -43,13 +43,14 @@ Or install from a source checkout:
 
     $ pip install .
 
-The console script is ``cronenberg = radon:main``. Commands use
-``cronenberg``. The importable package is still ``radon``.
+The console script is ``cronenberg = cronenberg:main``. Commands use
+``cronenberg``. The importable package is ``cronenberg``.
 
 Usage
 -----
 
-Use the ``cronenberg`` command, or import the ``radon`` package from Python.
+Use the ``cronenberg`` command, or import the ``cronenberg`` package from
+Python.
 
 .. code-block:: sh
 
@@ -60,7 +61,7 @@ Use the ``cronenberg`` command, or import the ``radon`` package from Python.
 
 .. code-block:: python
 
-    from radon.complexity import cc_visit
+    from cronenberg.complexity import cc_visit
 
 Cyclomatic Complexity Example
 -----------------------------
@@ -111,8 +112,9 @@ analyze a Python file that contains Unicode characters, set
 Configuration
 -------------
 
-Configuration names are unchanged: ``radon.cfg``, the ``[radon]`` section,
-the ``RADONCFG`` environment variable, and ``~/.radon.cfg``.
+Configuration uses ``cronenberg.cfg``, the ``[cronenberg]`` section,
+``[tool.cronenberg]`` in ``pyproject.toml``, the ``CRONENBERGCFG`` environment
+variable, and ``~/.cronenberg.cfg``.
 
 On a Continuous Integration server
 ----------------------------------
