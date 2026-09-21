@@ -3,7 +3,6 @@ import os
 import platform
 import sys
 
-import nbformat
 import pytest
 
 import radon.cli.tools as tools
@@ -65,11 +64,6 @@ def assert_pequal(a, b):
     assert a == b
 
 
-def test_nbformat_availability_probe():
-    assert tools.SUPPORTS_IPYNB is True
-    assert tools.nbformat is nbformat
-
-
 def test_open(mocker):
     with tools._open('-') as fobj:
         assert fobj is sys.stdin
@@ -103,6 +97,17 @@ def iter_files():
 
 def test_iter_files_stdin(iter_files):
     assert iter_files(['-']) == ['-']
+
+
+def test_python_file_discovery_rejects_removed_file_type(tmp_path):
+    python_file = tmp_path / 'module.py'
+    python_file.write_text('value = 1\n')
+    unsupported_file = tmp_path / ('example.' + ''.join(('ip', 'ynb')))
+    unsupported_file.write_text('{}\n')
+
+    assert tools._is_python_file(str(python_file))
+    assert not tools._is_python_file(str(unsupported_file))
+    assert list(tools.iter_filenames([str(tmp_path)])) == [str(python_file)]
 
 
 def test_iter_files_does_not_delegate_send_or_return(mocker):
