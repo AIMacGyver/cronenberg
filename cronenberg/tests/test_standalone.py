@@ -177,6 +177,7 @@ RAW_FLAGS = (
     "--json",
     "-O",
     "--output-file",
+    "--theme",
     "-h",
     "--help",
 )
@@ -198,7 +199,7 @@ def test_raw_fixture_matches_terminal_text_and_json(tmp_path):
     source_path = tmp_path / "mod.py"
     source_path.write_text("def other():\n    return 0\n")
 
-    terminal = subprocess.run(
+    piped = subprocess.run(
         ["cronenberg", "raw", str(source_path)],
         check=False,
         capture_output=True,
@@ -211,23 +212,10 @@ def test_raw_fixture_matches_terminal_text_and_json(tmp_path):
         text=True,
     )
 
-    assert terminal.returncode == 0
-    assert terminal.stdout == (
-        f"{source_path}\n"
-        "    LOC: 2\n"
-        "    LLOC: 2\n"
-        "    SLOC: 2\n"
-        "    Comments: 0\n"
-        "    Single comments: 0\n"
-        "    Multi: 0\n"
-        "    Blank: 0\n"
-        "    - Comment Stats\n"
-        "        (C % L): 0%\n"
-        "        (C % S): 0%\n"
-        "        (C + M % L): 0%\n"
-    )
+    assert piped.returncode == 0
     assert parsed_json.returncode == 0
-    assert json.loads(parsed_json.stdout) == {
+    assert piped.stdout == parsed_json.stdout
+    assert json.loads(piped.stdout) == {
         str(source_path): {
             "loc": 2,
             "lloc": 2,
