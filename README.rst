@@ -107,7 +107,7 @@ Output can be colored:
 
 On some systems, such as Windows, the default encoding is not UTF-8. To
 analyze a Python file that contains Unicode characters, set
-``RADONFILESENCODING`` to ``UTF-8``.
+``CRONENBERGFILESENCODING`` to ``UTF-8``.
 
 Configuration
 -------------

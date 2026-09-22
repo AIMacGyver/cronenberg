@@ -1,3 +1,4 @@
+import importlib
 import os
 import sys
 
@@ -62,7 +63,7 @@ def assert_pequal(a, b):
     assert a == b
 
 
-def test_open(mocker):
+def test_open(mocker, monkeypatch):
     with tools._open('-') as fobj:
         assert fobj is sys.stdin
 
@@ -72,13 +73,28 @@ def test_open(mocker):
     except TypeError:  # issue 101
         assert False, 'tools._open raised TypeError'
 
-    m = mocker.mock_open()
-    mocker.patch('cronenberg.cli.tools.open', m, create=True)
-    tools._open('randomfile.py').__enter__()
-    m.assert_called_with(
-        'randomfile.py',
-        encoding=os.getenv('RADONFILESENCODING', 'utf-8'),
-    )
+    def assert_opened_with(encoding):
+        spec = importlib.util.spec_from_file_location(
+            'cronenberg_tools_encoding_probe',
+            tools.__file__,
+        )
+        loaded = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(loaded)
+        mocked_open = mocker.mock_open()
+        mocker.patch.object(loaded, 'open', mocked_open, create=True)
+        loaded._open('randomfile.py').__enter__()
+        mocked_open.assert_called_with('randomfile.py', encoding=encoding)
+
+    monkeypatch.delenv('CRONENBERGFILESENCODING', raising=False)
+    monkeypatch.delenv('RADONFILESENCODING', raising=False)
+    assert_opened_with('utf-8')
+
+    monkeypatch.setenv('CRONENBERGFILESENCODING', 'utf-8')
+    assert_opened_with('utf-8')
+
+    monkeypatch.delenv('CRONENBERGFILESENCODING', raising=False)
+    monkeypatch.setenv('RADONFILESENCODING', 'latin-1')
+    assert_opened_with('utf-8')
 
 
 @pytest.fixture

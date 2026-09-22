@@ -1,7 +1,7 @@
 '''This module contains various utility functions used in the CLI interface.
 Attributes:
     _encoding (str): encoding with all files will be opened. Configured by
-    environment variable RADONFILESENCODING
+    environment variable CRONENBERGFILESENCODING
 '''
 
 import fnmatch
@@ -21,7 +21,7 @@ default_encoding = 'utf-8'
 # This code allows to change `open()` encoding by setting an environment
 # variable.
 _encoding = os.getenv(
-    'RADONFILESENCODING', default_encoding
+    'CRONENBERGFILESENCODING', default_encoding
 )
 
 
