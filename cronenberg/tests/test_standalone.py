@@ -166,15 +166,89 @@ def test_cc_config_min_still_filters(tmp_path):
     ]
 
 
-def test_raw_mi_and_hal_stay_on_mando():
+RAW_FLAGS = (
+    "-e",
+    "--exclude",
+    "-i",
+    "--ignore",
+    "-s",
+    "--summary",
+    "-j",
+    "--json",
+    "-O",
+    "--output-file",
+    "-h",
+    "--help",
+)
+
+
+def test_raw_help_lists_existing_flags():
+    help_result = subprocess.run(
+        ["cronenberg", "raw", "--help"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "Usage: cronenberg raw" in help_result.stdout
+    assert all(flag in help_result.stdout for flag in RAW_FLAGS)
+
+
+def test_raw_fixture_matches_terminal_text_and_json(tmp_path):
+    source_path = tmp_path / "mod.py"
+    source_path.write_text("def other():\n    return 0\n")
+
+    terminal = subprocess.run(
+        ["cronenberg", "raw", str(source_path)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    parsed_json = subprocess.run(
+        ["cronenberg", "raw", str(source_path), "-j"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert terminal.returncode == 0
+    assert terminal.stdout == (
+        f"{source_path}\n"
+        "    LOC: 2\n"
+        "    LLOC: 2\n"
+        "    SLOC: 2\n"
+        "    Comments: 0\n"
+        "    Single comments: 0\n"
+        "    Multi: 0\n"
+        "    Blank: 0\n"
+        "    - Comment Stats\n"
+        "        (C % L): 0%\n"
+        "        (C % S): 0%\n"
+        "        (C + M % L): 0%\n"
+    )
+    assert parsed_json.returncode == 0
+    assert json.loads(parsed_json.stdout) == {
+        str(source_path): {
+            "loc": 2,
+            "lloc": 2,
+            "sloc": 2,
+            "comments": 0,
+            "multi": 0,
+            "blank": 0,
+            "single_comments": 0,
+        }
+    }
+
+
+def test_mi_and_hal_stay_on_mando():
     root = subprocess.run(
         ["cronenberg", "--help"],
         check=True,
         capture_output=True,
         text=True,
     )
-    raw_help = subprocess.run(
-        ["cronenberg", "raw", "--help"],
+    mi_help = subprocess.run(
+        ["cronenberg", "mi", "--help"],
         check=True,
         capture_output=True,
         text=True,
@@ -183,8 +257,8 @@ def test_raw_mi_and_hal_stay_on_mando():
     assert "usage: cronenberg" in root.stdout
     for name in ("cc", "raw", "mi", "hal"):
         assert name in root.stdout
-    assert "usage: cronenberg raw" in raw_help.stdout
-    assert "--json" in raw_help.stdout
+    assert "usage: cronenberg mi" in mi_help.stdout
+    assert "--json" in mi_help.stdout
 
 
 def test_removed_hosted_integration_is_absent():
