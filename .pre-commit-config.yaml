@@ -4,13 +4,7 @@ repos:
     hooks:
       - id: ruff-check
         args: [--fix]
-      # Temporary formatter debt (2 files); remove paths as focused PRs land.
       - id: ruff-format
-        exclude: |
-          (?x)^(
-            cronenberg/cli/tools\.py|
-            cronenberg/tests/test_cli_tools\.py
-          )$
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
