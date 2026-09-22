@@ -8,14 +8,14 @@ repos:
       - id: ruff-format
         exclude: |
           (?x)^(
-            radon/cli/harvest\.py|
-            radon/cli/__init__\.py|
-            radon/cli/tools\.py|
-            radon/complexity\.py|
-            radon/tests/test_cli_harvest\.py|
-            radon/tests/test_cli\.py|
-            radon/tests/test_cli_tools\.py|
-            radon/tests/test_complexity_utils\.py
+            cronenberg/cli/harvest\.py|
+            cronenberg/cli/__init__\.py|
+            cronenberg/cli/tools\.py|
+            cronenberg/complexity\.py|
+            cronenberg/tests/test_cli_harvest\.py|
+            cronenberg/tests/test_cli\.py|
+            cronenberg/tests/test_cli_tools\.py|
+            cronenberg/tests/test_complexity_utils\.py
           )$
 
   - repo: https://github.com/pre-commit/pre-commit-hooks

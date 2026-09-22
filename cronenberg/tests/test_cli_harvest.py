@@ -5,9 +5,9 @@ except ImportError:
 
 import pytest
 
-import radon.cli.harvest as harvest
-import radon.complexity as cc_mod
-from radon.cli import Config
+import cronenberg.cli.harvest as harvest
+import cronenberg.complexity as cc_mod
+from cronenberg.cli import Config
 
 BASE_CONFIG = Config(
     exclude=r'test_[^.]+\.py',
@@ -65,7 +65,7 @@ def mi_config():
 
 
 def test_base_iter_filenames(base_config, mocker):
-    iter_mock = mocker.patch('radon.cli.harvest.iter_filenames')
+    iter_mock = mocker.patch('cronenberg.cli.harvest.iter_filenames')
     h = harvest.Harvester([], base_config)
     h._iter_filenames()
 
@@ -123,8 +123,8 @@ def test_base_as_json(base_config):
 
 
 def test_cc_gobble(cc_config, mocker):
-    sr_mock = mocker.patch('radon.cli.harvest.sorted_results')
-    cc_mock = mocker.patch('radon.cli.harvest.cc_visit')
+    sr_mock = mocker.patch('cronenberg.cli.harvest.sorted_results')
+    cc_mock = mocker.patch('cronenberg.cli.harvest.cc_visit')
     cc_mock.return_value = []
     fobj = mocker.MagicMock()
     fobj.read.return_value = mocker.sentinel.one
@@ -141,7 +141,7 @@ def test_cc_gobble(cc_config, mocker):
 
 
 def test_cc_to_dicts(cc_config, mocker):
-    c2d_mock = mocker.patch('radon.cli.harvest.cc_to_dict')
+    c2d_mock = mocker.patch('cronenberg.cli.harvest.cc_to_dict')
     c2d_mock.side_effect = lambda i: i
     h = harvest.CCHarvester([], cc_config)
     sample_results = [
@@ -160,7 +160,7 @@ def test_cc_to_dicts(cc_config, mocker):
 
 
 def test_cc_as_json_xml(cc_config, mocker):
-    d2x_mock = mocker.patch('radon.cli.harvest.dict_to_xml')
+    d2x_mock = mocker.patch('cronenberg.cli.harvest.dict_to_xml')
     to_dicts_mock = mocker.MagicMock()
     to_dicts_mock.return_value = {'a': {'rank': 'A'}}
 
@@ -175,7 +175,7 @@ def test_cc_as_json_xml(cc_config, mocker):
 
 
 def test_cc_as_md(cc_config, mocker):
-    d2md_mock = mocker.patch('radon.cli.harvest.dict_to_md')
+    d2md_mock = mocker.patch('cronenberg.cli.harvest.dict_to_md')
     to_dicts_mock = mocker.MagicMock()
     to_dicts_mock.return_value = {'a': {'rank': 'A'}}
 
@@ -188,9 +188,9 @@ def test_cc_as_md(cc_config, mocker):
 
 
 def test_cc_to_terminal(cc_config, mocker):
-    reset_mock = mocker.patch('radon.cli.harvest.RESET')
-    ranks_mock = mocker.patch('radon.cli.harvest.RANKS_COLORS')
-    c2t_mock = mocker.patch('radon.cli.harvest.cc_to_terminal')
+    reset_mock = mocker.patch('cronenberg.cli.harvest.RESET')
+    ranks_mock = mocker.patch('cronenberg.cli.harvest.RANKS_COLORS')
+    c2t_mock = mocker.patch('cronenberg.cli.harvest.cc_to_terminal')
     h = harvest.CCHarvester([], cc_config)
     h._results = [('a', {'error': 'mystr'}), ('b', {})]
     c2t_mock.return_value = (['res'], 9, 3)
@@ -219,8 +219,8 @@ def test_cc_to_terminal(cc_config, mocker):
 
 
 def test_raw_gobble(raw_config, mocker):
-    r2d_mock = mocker.patch('radon.cli.harvest.raw_to_dict')
-    analyze_mock = mocker.patch('radon.cli.harvest.analyze')
+    r2d_mock = mocker.patch('cronenberg.cli.harvest.raw_to_dict')
+    analyze_mock = mocker.patch('cronenberg.cli.harvest.analyze')
     fobj = mocker.MagicMock()
     fobj.read.return_value = mocker.sentinel.one
     analyze_mock.return_value = mocker.sentinel.two
@@ -335,7 +335,7 @@ def test_raw_to_terminal(raw_config):
 
 
 def test_mi_gobble(mi_config, mocker):
-    mv_mock = mocker.patch('radon.cli.harvest.mi_visit')
+    mv_mock = mocker.patch('cronenberg.cli.harvest.mi_visit')
     fobj = mocker.MagicMock()
     fobj.read.return_value = mocker.sentinel.one
     mv_mock.return_value = 23.5
@@ -349,7 +349,7 @@ def test_mi_gobble(mi_config, mocker):
 
 
 def test_mi_as_json(mi_config, mocker):
-    d_mock = mocker.patch('radon.cli.harvest.json.dumps')
+    d_mock = mocker.patch('cronenberg.cli.harvest.json.dumps')
     h = harvest.MIHarvester([], mi_config)
     h.config.min = 'C'
     h._results = [
@@ -370,8 +370,8 @@ def test_mi_as_xml(mi_config):
 
 
 def test_mi_to_terminal(mi_config, mocker):
-    reset_mock = mocker.patch('radon.cli.harvest.RESET')
-    ranks_mock = mocker.patch('radon.cli.harvest.MI_RANKS')
+    reset_mock = mocker.patch('cronenberg.cli.harvest.RESET')
+    ranks_mock = mocker.patch('cronenberg.cli.harvest.MI_RANKS')
     ranks_mock.__getitem__.side_effect = lambda j: f'<|{j}|>'
     reset_mock.__eq__.side_effect = lambda o: o == '__R__'
 

@@ -6,8 +6,8 @@ import ast
 import collections
 import math
 
-from radon.raw import analyze
-from radon.visitors import ComplexityVisitor, HalsteadVisitor
+from cronenberg.raw import analyze
+from cronenberg.visitors import ComplexityVisitor, HalsteadVisitor
 
 # Halstead metrics
 HalsteadReport = collections.namedtuple(
@@ -24,14 +24,14 @@ Halstead = collections.namedtuple("Halstead", "total functions")
 
 def h_visit(code):
     '''Compile the code into an AST tree and then pass it to
-    :func:`~radon.metrics.h_visit_ast`.
+    :func:`~cronenberg.metrics.h_visit_ast`.
     '''
     return h_visit_ast(ast.parse(code))
 
 
 def h_visit_ast(ast_node):
     '''
-    Visit the AST node using the :class:`~radon.visitors.HalsteadVisitor`
+    Visit the AST node using the :class:`~cronenberg.visitors.HalsteadVisitor`
     visitor. The results are `HalsteadReport` namedtuples with the following
     fields:
 
@@ -98,7 +98,7 @@ def halstead_visitor_report(visitor):
 def mi_compute(halstead_volume, complexity, sloc, comments):
     '''Compute the Maintainability Index (MI) given the Halstead Volume, the
     Cyclomatic Complexity, the SLOC number and the number of comment lines.
-    Usually it is not used directly but instead :func:`~radon.metrics.mi_visit`
+    Usually it is not used directly but instead :func:`~cronenberg.metrics.mi_visit`
     is preferred.
     '''
     if any(metric <= 0 for metric in (halstead_volume, sloc)):

@@ -2,7 +2,7 @@ import operator
 
 import pytest
 
-from radon.complexity import (
+from cronenberg.complexity import (
     ALPHA,
     LINES,
     SCORE,
@@ -12,7 +12,7 @@ from radon.complexity import (
     cc_visit,
     sorted_results,
 )
-from radon.visitors import Class, Function
+from cronenberg.visitors import Class, Function
 
 from .test_complexity_visitor import GENERAL_CASES, dedent
 
@@ -23,7 +23,7 @@ def get_index(seq):
 
 def _compute_cc_rank(score):
     # This is really ugly
-    # Luckily the rank function in radon.complexity is not like this!
+    # Luckily the rank function in cronenberg.complexity is not like this!
     if score < 0:
         rank = ValueError
     elif 0 <= score <= 5:

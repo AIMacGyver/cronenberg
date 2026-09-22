@@ -102,7 +102,7 @@ class Class(BaseClass):
 
 
 class CodeVisitor(ast.NodeVisitor):
-    '''Base class for every NodeVisitors in `radon.visitors`. It implements a
+    '''Base class for every NodeVisitors in `cronenberg.visitors`. It implements a
     couple utility class methods and a static method.
     '''
 
@@ -322,7 +322,7 @@ class ComplexityVisitor(CodeVisitor):
 
 class HalsteadVisitor(CodeVisitor):
     '''Visitor that keeps track of operators and operands, in order to compute
-    Halstead metrics (see :func:`radon.metrics.h_visit`).
+    Halstead metrics (see :func:`cronenberg.metrics.h_visit`).
     '''
 
     # As of Python 3.8 Num/Str/Bytes/NameConstat

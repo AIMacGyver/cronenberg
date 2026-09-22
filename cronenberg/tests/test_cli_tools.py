@@ -4,9 +4,9 @@ import sys
 
 import pytest
 
-import radon.cli.tools as tools
-from radon.raw import Module
-from radon.visitors import Class, Function
+import cronenberg.cli.tools as tools
+from cronenberg.raw import Module
+from cronenberg.visitors import Class, Function
 
 
 def fake_isfile(filename):
@@ -76,11 +76,11 @@ def test_open(mocker):
     m = mocker.mock_open()
 
     if platform.python_implementation() == 'PyPy':
-        mocker.patch('radon.cli.tools.open', m, create=True)
+        mocker.patch('cronenberg.cli.tools.open', m, create=True)
         tools._open('randomfile.py').__enter__()
         m.assert_called_with('randomfile.py')
     else:
-        mocker.patch('radon.cli.tools._open_function', m, create=True)
+        mocker.patch('cronenberg.cli.tools._open_function', m, create=True)
         tools._open('randomfile.py').__enter__()
         default_encoding = 'utf-8'
         except_encoding = os.getenv(
@@ -146,8 +146,8 @@ def test_iter_files_does_not_delegate_close(mocker):
 
 
 def test_iter_files(mocker, iter_files):
-    os_mod = mocker.patch('radon.cli.tools.os')
-    os_path_mod = mocker.patch('radon.cli.tools.os.path')
+    os_mod = mocker.patch('cronenberg.cli.tools.os')
+    os_path_mod = mocker.patch('cronenberg.cli.tools.os.path')
     os_path_mod.normpath = os.path.normpath
     os_path_mod.basename = os.path.basename
     os_path_mod.join = os.path.join

@@ -1,71 +1,41 @@
-Radon
-=====
+Cronenberg
+==========
 
 .. note::
 
     **Project status:** Cronenberg is an experimental modernization of
     `Radon <https://github.com/rubik/radon>`__. It currently focuses on
-    packaging, developer tooling, and infrastructure while preserving
-    behavior. Cronenberg is not yet an official Radon replacement.
+    packaging, developer tooling, and infrastructure. Metric output stays
+    compatible with Radon. Cronenberg is not an official Radon replacement.
 
-.. image:: https://img.shields.io/coveralls/rubik/radon/master.svg?style=for-the-badge
-    :alt: Coveralls badge
-    :target: https://coveralls.io/r/rubik/radon?branch=master
-
-.. image:: https://img.shields.io/pypi/v/radon.svg?style=for-the-badge
-    :alt: PyPI latest version badge
-    :target: https://pypi.python.org/pypi/radon
-
-.. image:: https://img.shields.io/pypi/l/radon.svg?style=for-the-badge
-    :alt: Radon license
-    :target: https://pypi.python.org/pypi/radon
-
-.. raw::  html
-
-    <p><a href="https://hellogithub.com/repository/bbca7606a6b1412da1312d68ae81d781" target="_blank"><img src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=bbca7606a6b1412da1312d68ae81d781&claim_uid=pO5Q0JkFzC8IPr9&theme=dark" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a></p>
-
-----
-
-Radon is a Python tool that computes various metrics from the source code.
-Radon can compute:
+Cronenberg computes metrics from Python source code:
 
 * **McCabe's complexity**, i.e. cyclomatic complexity
 * **raw** metrics (these include SLOC, comment lines, blank lines, &c.)
 * **Halstead** metrics (all of them)
 * **Maintainability Index** (the one used in Visual Studio)
 
+Cronenberg analyzes pure Python code. It does not analyze notebooks, ship a
+Flake8 plugin, publish Read the Docs or Sphinx documentation, or integrate
+with Code Climate.
+
 Requirements
 ------------
 
-Radon will run from **Python 2.7** to **Python 3.12** (except Python versions
-from 3.0 to 3.3) with a single code base and without the need of tools like
-2to3 or six. It can also run on **PyPy** without any problems (currently PyPy
-3.5 v7.3.1 is used in tests).
+Cronenberg requires **Python 3.11** or newer.
 
-Radon depends on as few packages as possible. Currently only `mando` is
-strictly required (for the CLI interface). `colorama` is also listed as a
-dependency but if Radon cannot import it, the output simply will not be
-colored.
-
-**Note**:
-**Python 2.6** was supported until version 1.5.0. Starting from version 2.0, it
-is not supported anymore.
+It depends on `mando <https://github.com/rubik/mando>`__ for the command-line
+interface and on `colorama <https://github.com/tartley/colorama>`__. If
+``colorama`` cannot be imported, command output is not colored.
 
 Installation
 ------------
 
-With Pip:
+Install the ``cronenberg`` distribution:
 
 .. code-block:: sh
 
-    $ pip install radon
-
-If you want to configure Radon from `pyproject.toml` and you run Python <3.11,
-you'll need the extra `toml` dependency:
-
-.. code-block:: sh
-
-   $ pip install radon[toml]
+    $ pip install cronenberg
 
 Or install from a source checkout:
 
@@ -73,10 +43,25 @@ Or install from a source checkout:
 
     $ pip install .
 
+The console script is ``cronenberg = cronenberg:main``. Commands use
+``cronenberg``. The importable package is ``cronenberg``.
+
 Usage
 -----
 
-Radon can be used either from the command line or programmatically.
+Use the ``cronenberg`` command, or import the ``cronenberg`` package from
+Python.
+
+.. code-block:: sh
+
+    $ cronenberg cc path/to/module.py
+    $ cronenberg mi path/to/module.py
+    $ cronenberg raw path/to/module.py
+    $ cronenberg hal path/to/module.py
+
+.. code-block:: python
+
+    from cronenberg.complexity import cc_visit
 
 Cyclomatic Complexity Example
 -----------------------------
@@ -85,7 +70,7 @@ Quick example:
 
 .. code-block:: sh
 
-    $ radon cc sympy/solvers/solvers.py -a -nc
+    $ cronenberg cc sympy/solvers/solvers.py -a -nc
     sympy/solvers/solvers.py
         F 346:0 solve - F
         F 1093:0 _solve - F
@@ -104,59 +89,48 @@ Quick example:
 
 Explanation:
 
-* ``cc`` is the radon command to compute Cyclomatic Complexity
-* ``-a`` tells radon to calculate the average complexity at the end. Note that
-  the average is computed among the *shown* blocks. If you want the total
-  average, among all the blocks, regardless of what is being shown, you should
-  use ``--total-average``.
-* ``-nc`` tells radon to print only results with a complexity rank of C or
-  worse. Other examples: ``-na`` (from A to F), or ``-nd`` (from D to F).
+* ``cc`` computes cyclomatic complexity.
+* ``-a`` calculates the average complexity at the end. The average is
+  computed among the *shown* blocks. For the average among all blocks, use
+  ``--total-average``.
+* ``-nc`` prints only results with a complexity rank of C or worse. Other
+  examples: ``-na`` (from A to F), or ``-nd`` (from D to F).
 * The letter *in front of* the line numbers represents the type of the block
   (**F** means function, **M** method and **C** class).
 
-Actually it's even better: it's got colors!
+Output can be colored:
 
 .. image:: https://cloud.githubusercontent.com/assets/238549/3707477/5793aeaa-1435-11e4-98fb-00e0bd8137f5.png
-    :alt: A screen of Radon's cc command
-
+    :alt: Colored cyclomatic complexity output
 
 **Note about file encoding**
 
-On some systems, such as Windows, the default encoding is not UTF-8. If you are
-using Unicode characters in your Python file and want to analyze it with Radon,
-you'll have to set the `RADONFILESENCODING` environment variable to `UTF-8`.
+On some systems, such as Windows, the default encoding is not UTF-8. To
+analyze a Python file that contains Unicode characters, set
+``RADONFILESENCODING`` to ``UTF-8``.
 
+Configuration
+-------------
+
+Configuration uses ``cronenberg.cfg``, the ``[cronenberg]`` section,
+``[tool.cronenberg]`` in ``pyproject.toml``, the ``CRONENBERGCFG`` environment
+variable, and ``~/.cronenberg.cfg``.
 
 On a Continuous Integration server
 ----------------------------------
 
-If you are looking to use `radon` on a CI server you may be better off with
-`xenon <https://github.com/rubik/xenon>`_. Although still experimental, it will
-fail (that means exiting with a non-zero exit code) when various thresholds are
-surpassed. `radon` is more of a reporting tool, while `xenon` is a monitoring
-one.
+Cronenberg reports metrics. It does not fail a build when a complexity
+threshold is crossed. `Xenon <https://github.com/rubik/xenon>`__ is a
+separate monitoring tool that exits with a non-zero status when thresholds
+are surpassed.
 
-If you are looking for more complete solutions, read the following sections.
+Credits
+-------
 
-Codacy
-++++++++++++
-
-`Codacy <https://www.codacy.com/>`_ uses Radon `by default <https://support.codacy.com/hc/en-us/articles/213632009-Engines#other-tools>`_ to calculate metrics from the source code.
-
-coala Analyzer
-++++++++++++++
-
-Radon is also supported in `coala <http://coala.io/>`_. To add Radon's
-checks to coala, simply add the ``RadonBear`` to one of the sections in
-your ``.coafile``.
-
-CodeFactor
-++++++++++++
-
-`CodeFactor <https://www.codefactor.io/>`_ uses Radon `out-of-the-box <https://support.codefactor.io/i24-analysis-tools-open-source>`_ to calculate Cyclomatic Complexity.
+Michele Lacchia is the original author of Radon.
 
 Links
 -----
 
-* PyPI: http://pypi.python.org/pypi/radon
-* Issue Tracker: https://github.com/rubik/radon/issues
+* Source: https://github.com/AIMacGyver/cronenberg
+* Upstream Radon: https://github.com/rubik/radon

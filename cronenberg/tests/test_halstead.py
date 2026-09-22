@@ -2,7 +2,7 @@ import textwrap
 
 import pytest
 
-from radon.visitors import HalsteadVisitor
+from cronenberg.visitors import HalsteadVisitor
 
 
 def dedent(code):

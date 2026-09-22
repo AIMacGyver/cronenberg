@@ -3,8 +3,8 @@
 import collections
 import json
 
-from radon.cli.colors import MI_RANKS, RANKS_COLORS, RESET
-from radon.cli.tools import (
+from cronenberg.cli.colors import MI_RANKS, RANKS_COLORS, RESET
+from cronenberg.cli.tools import (
     _open,
     cc_to_dict,
     cc_to_terminal,
@@ -13,14 +13,14 @@ from radon.cli.tools import (
     iter_filenames,
     raw_to_dict,
 )
-from radon.complexity import (
+from cronenberg.complexity import (
     add_inner_blocks,
     cc_rank,
     cc_visit,
     sorted_results,
 )
-from radon.metrics import h_visit, mi_rank, mi_visit
-from radon.raw import analyze
+from cronenberg.metrics import h_visit, mi_rank, mi_visit
+from cronenberg.raw import analyze
 
 
 class Harvester:
@@ -48,7 +48,7 @@ class Harvester:
         '''Initialize the Harvester.
 
         *paths* is a list of paths to analyze.
-        *config* is a :class:`~radon.cli.Config` object holding the
+        *config* is a :class:`~cronenberg.cli.Config` object holding the
         configuration values specific to the Harvester.
         '''
         self.paths = paths
@@ -56,7 +56,7 @@ class Harvester:
         self._results = []
 
     def _iter_filenames(self):
-        '''A wrapper around :func:`~radon.cli.tools.iter_filenames`.'''
+        '''A wrapper around :func:`~cronenberg.cli.tools.iter_filenames`.'''
         return iter_filenames(
             self.paths, self.config.exclude, self.config.ignore
         )

@@ -9,16 +9,16 @@ from contextlib import contextmanager
 
 from mando import Program
 
-import radon.complexity as cc_mod
-from radon.cli.colors import BRIGHT, RED, RESET
-from radon.cli.harvest import (
+import cronenberg.complexity as cc_mod
+from cronenberg.cli.colors import BRIGHT, RED, RESET
+from cronenberg.cli.harvest import (
     CCHarvester,
     HCHarvester,
     MIHarvester,
     RawHarvester,
 )
 
-CONFIG_SECTION_NAME = 'radon'
+CONFIG_SECTION_NAME = 'cronenberg'
 
 
 class FileConfig:
@@ -62,17 +62,17 @@ class FileConfig:
     def file_config():
         '''Return any file configuration discovered'''
         config = configparser.ConfigParser()
-        for path in (os.getenv('RADONCFG', None), 'radon.cfg'):
+        for path in (os.getenv('CRONENBERGCFG', None), 'cronenberg.cfg'):
             if path is not None and os.path.exists(path):
                 config.read_file(open(path))
         config.read_dict(FileConfig.toml_config())
-        config.read(['setup.cfg', os.path.expanduser('~/.radon.cfg')])
+        config.read(['setup.cfg', os.path.expanduser('~/.cronenberg.cfg')])
         return config
 
 
 _cfg = FileConfig()
 
-program = Program(version=sys.modules['radon'].__version__)
+program = Program(version=sys.modules['cronenberg'].__version__)
 
 
 @program.command
@@ -107,7 +107,7 @@ def cc(
     :param -e, --exclude <str>: Exclude files only when their path matches one
         of these glob patterns. Usually needs quoting at the command line.
     :param -i, --ignore <str>: Ignore directories when their name matches one
-        of these glob patterns: radon won't even descend into them. By default,
+        of these glob patterns: cronenberg won't even descend into them. By default,
         hidden directories (starting with '.') are ignored.
     :param -s, --show-complexity: Whether or not to show the actual complexity
         score together with the A-F rank. Default to False.
@@ -166,7 +166,7 @@ def raw(
     :param -e, --exclude <str>: Exclude files only when their path matches one
         of these glob patterns. Usually needs quoting at the command line.
     :param -i, --ignore <str>: Ignore directories when their name matches one
-        of these glob patterns: radon won't even descend into them. By default,
+        of these glob patterns: cronenberg won't even descend into them. By default,
         hidden directories (starting with '.') are ignored.
     :param -s, --summary:  If given, at the end of the analysis display the
         summary of the gathered metrics. Default to False.
@@ -211,7 +211,7 @@ def mi(
     :param -e, --exclude <str>: Exclude files only when their path matches one
         of these glob patterns. Usually needs quoting at the command line.
     :param -i, --ignore <str>: Ignore directories when their name matches one
-        of these glob patterns: radon won't even descend into them. By default,
+        of these glob patterns: cronenberg won't even descend into them. By default,
         hidden directories (starting with '.') are ignored.
     :param -m, --multi: If given, multiline strings are not counted as
         comments.
@@ -257,7 +257,7 @@ def hal(
     :param -e, --exclude <str>: Exclude files only when their path matches one
         of these glob patterns. Usually needs quoting at the command line.
     :param -i, --ignore <str>: Ignore directories when their name matches one
-        of these glob patterns: radon won't even descend into them. By default,
+        of these glob patterns: cronenberg won't even descend into them. By default,
         hidden directories (starting with '.') are ignored.
     :param -j, --json: Format results in JSON.
     :param -f, --functions: Analyze files by top-level functions instead of as
@@ -316,13 +316,13 @@ class Config:
 
 
 def log_result(harvester, **kwargs):
-    '''Log the results of an :class:`~radon.cli.harvest.Harvester object.
+    '''Log the results of an :class:`~cronenberg.cli.harvest.Harvester object.
 
     Keywords parameters determine how the results are formatted. If *json* is
     `True`, then `harvester.as_json()` is called. If *xml* is `True`, then
     `harvester.as_xml()` is called. Otherwise, `harvester.to_terminal()` is
     executed and `kwargs` is directly passed to the
-    :func:`~radon.cli.log` function.
+    :func:`~cronenberg.cli.log` function.
     '''
     if kwargs.get('json'):
         log(harvester.as_json(), noformat=True, **kwargs)
@@ -360,7 +360,7 @@ def log(msg, *args, **kwargs):
 
 def log_list(lst, *args, **kwargs):
     '''Log an entire list, line by line. All the arguments are directly passed
-    to :func:`~radon.cli.log`.
+    to :func:`~cronenberg.cli.log`.
     '''
     for line in lst:
         log(line, *args, **kwargs)

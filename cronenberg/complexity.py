@@ -4,7 +4,7 @@ Cyclomatic Complexity
 
 import math
 
-from radon.visitors import GET_COMPLEXITY, ComplexityVisitor, code2ast
+from cronenberg.visitors import GET_COMPLEXITY, ComplexityVisitor, code2ast
 
 # Public ordering callables retain their lambda identity for compatibility.
 SCORE = lambda block: -GET_COMPLEXITY(block)  # noqa: E731
@@ -46,8 +46,8 @@ def cc_rank(cc):
 
 def average_complexity(blocks):
     '''Compute the average Cyclomatic complexity from the given blocks.
-    Blocks must be either :class:`~radon.visitors.Function` or
-    :class:`~radon.visitors.Class`. If the block list is empty, then 0 is
+    Blocks must be either :class:`~cronenberg.visitors.Function` or
+    :class:`~cronenberg.visitors.Class`. If the block list is empty, then 0 is
     returned.
     '''
     size = len(blocks)
@@ -59,8 +59,8 @@ def average_complexity(blocks):
 def sorted_results(blocks, order=SCORE):
     '''Given a ComplexityVisitor instance, returns a list of sorted blocks
     with respect to complexity. A block is a either
-    :class:`~radon.visitors.Function` object or a
-    :class:`~radon.visitors.Class` object.
+    :class:`~cronenberg.visitors.Function` object or a
+    :class:`~cronenberg.visitors.Class` object.
     The blocks are sorted in descending order from the block with the highest
     complexity.
 
@@ -95,14 +95,14 @@ def add_inner_blocks(blocks):
 
 
 def cc_visit(code, **kwargs):
-    '''Visit the given code with :class:`~radon.visitors.ComplexityVisitor`.
+    '''Visit the given code with :class:`~cronenberg.visitors.ComplexityVisitor`.
     All the keyword arguments are directly passed to the visitor.
     '''
     return cc_visit_ast(code2ast(code), **kwargs)
 
 
 def cc_visit_ast(ast_node, **kwargs):
-    '''Visit the AST node with :class:`~radon.visitors.ComplexityVisitor`. All
+    '''Visit the AST node with :class:`~cronenberg.visitors.ComplexityVisitor`. All
     the keyword arguments are directly passed to the visitor.
     '''
     return ComplexityVisitor.from_ast(ast_node, **kwargs).blocks

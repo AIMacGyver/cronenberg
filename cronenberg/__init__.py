@@ -8,7 +8,7 @@ def main():
     '''The entry point for Setuptools.'''
     import sys
 
-    from radon.cli import log_error, program
+    from cronenberg.cli import log_error, program
 
     if not sys.argv[1:]:
         sys.argv.append('-h')

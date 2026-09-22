@@ -11,9 +11,9 @@ import sys
 import xml.etree.ElementTree as et
 from contextlib import contextmanager
 
-from radon.cli.colors import BRIGHT, LETTERS_COLORS, RANKS_COLORS, RESET, TEMPLATE
-from radon.complexity import cc_rank
-from radon.visitors import Function
+from cronenberg.cli.colors import BRIGHT, LETTERS_COLORS, RANKS_COLORS, RESET, TEMPLATE
+from cronenberg.complexity import cc_rank
+from cronenberg.visitors import Function
 
 # PyPy doesn't support encoding parameter in `open()` function and works with
 # UTF-8 encoding by default
@@ -241,7 +241,7 @@ def cc_to_terminal(results, show_complexity, min, max, total_average):
 def _format_line(block, ranked, show_complexity=False):
     '''Format a single block as a line.
 
-    *ranked* is the rank given by the `~radon.complexity.rank` function. If
+    *ranked* is the rank given by the `~cronenberg.complexity.rank` function. If
     *show_complexity* is True, then the complexity score is added alongside.
     '''
     letter_colored = LETTERS_COLORS[block.letter] + block.letter

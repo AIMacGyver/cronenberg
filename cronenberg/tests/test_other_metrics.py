@@ -2,7 +2,7 @@ import textwrap
 
 import pytest
 
-from radon.metrics import h_visit, mi_compute, mi_rank, mi_visit
+from cronenberg.metrics import h_visit, mi_compute, mi_rank, mi_visit
 
 
 def dedent(code):
