@@ -66,7 +66,7 @@ class FileConfig:
             if path is not None and os.path.exists(path):
                 config.read_file(open(path))
         config.read_dict(FileConfig.toml_config())
-        config.read(['setup.cfg', os.path.expanduser('~/.cronenberg.cfg')])
+        config.read([os.path.expanduser('~/.cronenberg.cfg')])
         return config
 
 
