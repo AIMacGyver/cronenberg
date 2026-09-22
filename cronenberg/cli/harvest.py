@@ -1,13 +1,10 @@
 """This module holds the base Harvester class and all its subclassess."""
 
-import collections
 import json
 
-from cronenberg.cli.colors import MI_RANKS, RANKS_COLORS, RESET
 from cronenberg.cli.tools import (
     _open,
     cc_to_dict,
-    cc_to_terminal,
     dict_to_md,
     dict_to_xml,
     iter_filenames,
@@ -15,7 +12,6 @@ from cronenberg.cli.tools import (
 )
 from cronenberg.complexity import (
     add_inner_blocks,
-    cc_rank,
     cc_visit,
     sorted_results,
 )
@@ -37,12 +33,10 @@ class Harvester:
 
     3. **Reporting**: :meth:`as_dict` returns one dictionary.
        :meth:`as_json` dumps that dictionary with sorted object keys.
-       :meth:`as_xml` returns XML when implemented. :meth:`to_terminal` yields
-       the lines to print in the terminal.
+       :meth:`as_xml` returns XML when implemented.
 
     This class is meant to be subclasses and cannot be used directly, since
-    the methods :meth:`gobble`, :meth:`as_xml` and :meth:`to_terminal` are
-    not implemented.
+    the methods :meth:`gobble` and :meth:`as_xml` are not implemented.
     """
 
     def __init__(self, paths, config):
@@ -126,14 +120,6 @@ class Harvester:
         """Format the results as Markdown."""
         raise NotImplementedError
 
-    def to_terminal(self):
-        """Yields tuples representing lines to be printed to a terminal.
-
-        The tuples have the following format: ``(line, args, kwargs)``.
-        The line is then formatted with `line.format(*args, **kwargs)`.
-        """
-        raise NotImplementedError
-
 
 class CCHarvester(Harvester):
     """A class that analyzes Python modules' Cyclomatic Complexity."""
@@ -176,54 +162,9 @@ class CCHarvester(Harvester):
         """Format the results as Markdown."""
         return dict_to_md(self._to_dicts())
 
-    def to_terminal(self):
-        """Yield lines to be printed in a terminal."""
-        average_cc = 0.0
-        analyzed = 0
-        for name, blocks in self.results:
-            if "error" in blocks:
-                yield name, (blocks["error"],), {"error": True}
-                continue
-            res, cc, n = cc_to_terminal(
-                blocks,
-                self.config.show_complexity,
-                self.config.min,
-                self.config.max,
-                self.config.total_average,
-            )
-            average_cc += cc
-            analyzed += n
-            if res:
-                yield name, (), {}
-                yield res, (), {"indent": 1}
-
-        if (self.config.average or self.config.total_average) and analyzed:
-            cc = average_cc / analyzed
-            ranked_cc = cc_rank(cc)
-            yield (
-                "\n{0} blocks (classes, functions, methods) analyzed.",
-                (analyzed,),
-                {},
-            )
-            yield (
-                "Average complexity: {0}{1} ({2}){3}",
-                (RANKS_COLORS[ranked_cc], ranked_cc, cc, RESET),
-                {},
-            )
-
 
 class RawHarvester(Harvester):
     """A class that analyzes Python modules' raw metrics."""
-
-    headers = [
-        "LOC",
-        "LLOC",
-        "SLOC",
-        "Comments",
-        "Single comments",
-        "Multi",
-        "Blank",
-    ]
 
     def gobble(self, fobj):
         """Analyze the content of the file object."""
@@ -242,64 +183,6 @@ class RawHarvester(Harvester):
         """Placeholder method. Currently not implemented."""
         raise NotImplementedError("RawHarvester: cannot export results as XML")
 
-    def to_terminal(self):
-        """Yield lines to be printed to a terminal."""
-        sum_metrics = collections.defaultdict(int)
-        for path, mod in self.results:
-            if "error" in mod:
-                yield path, (mod["error"],), {"error": True}
-                continue
-            yield path, (), {}
-            for header in self.headers:
-                value = mod[header.lower().replace(" ", "_")]
-                yield "{0}: {1}", (header, value), {"indent": 1}
-                sum_metrics[header] += value
-
-            loc, comments = mod["loc"], mod["comments"]
-            yield "- Comment Stats", (), {"indent": 1}
-            yield (
-                "(C % L): {0:.0%}",
-                (comments / (float(loc) or 1),),
-                {"indent": 2},
-            )
-            yield (
-                "(C % S): {0:.0%}",
-                (comments / (float(mod["sloc"]) or 1),),
-                {"indent": 2},
-            )
-            yield (
-                "(C + M % L): {0:.0%}",
-                ((comments + mod["multi"]) / (float(loc) or 1),),
-                {"indent": 2},
-            )
-
-        if self.config.summary:
-
-            def _get(k, v=0):
-                return sum_metrics.get(k, v)
-
-            comments = float(_get("Comments"))
-            yield "** Total **", (), {}
-            for header in self.headers:
-                yield "{0}: {1}", (header, sum_metrics[header]), {"indent": 1}
-
-            yield "- Comment Stats", (), {"indent": 1}
-            yield (
-                "(C % L): {0:.0%}",
-                (comments / (_get("LOC", 1) or 1),),
-                {"indent": 2},
-            )
-            yield (
-                "(C % S): {0:.0%}",
-                (comments / (_get("SLOC", 1) or 1),),
-                {"indent": 2},
-            )
-            yield (
-                "(C + M % L): {0:.0%}",
-                (float(_get("Comments", 0) + _get("Multi")) / (_get("LOC", 1) or 1),),
-                {"indent": 2},
-            )
-
 
 class MIHarvester(Harvester):
     """A class that analyzes Python modules' Maintainability Index."""
@@ -317,11 +200,6 @@ class MIHarvester(Harvester):
             if "error" in value or self.config.min <= value["rank"] <= self.config.max:
                 yield (key, value)
 
-    def _sort(self, results):
-        if self.config.sort:
-            return sorted(results, key=lambda el: el[1]["mi"])
-        return results
-
     def as_dict(self):
         """Return Maintainability Index results as one dictionary.
 
@@ -335,26 +213,9 @@ class MIHarvester(Harvester):
         """Placeholder method. Currently not implemented."""
         raise NotImplementedError("Cannot export results as XML")
 
-    def to_terminal(self):
-        """Yield lines to be printed to a terminal."""
-        for name, mi in self._sort(self.filtered_results):
-            if "error" in mi:
-                yield name, (mi["error"],), {"error": True}
-                continue
-            rank = mi["rank"]
-            color = MI_RANKS[rank]
-            to_show = ""
-            if self.config.show:
-                to_show = " ({:.2f})".format(mi["mi"])
-            yield "{0} - {1}{2}{3}{4}", (name, color, rank, to_show, RESET), {}
-
 
 class HCHarvester(Harvester):
     """Computes the Halstead Complexity of Python modules."""
-
-    def __init__(self, paths, config):
-        super().__init__(paths, config)
-        self.by_function = config.by_function
 
     def gobble(self, fobj):
         """Analyze the content of the file object."""
@@ -369,21 +230,6 @@ class HCHarvester(Harvester):
             records, or to an error record.
         """
         return self._to_dicts()
-
-    def to_terminal(self):
-        """Yield lines to be printed to the terminal."""
-        if self.by_function:
-            for name, res in self.results:
-                yield f"{name}:", (), {}
-                for name, report in res.functions:
-                    yield f"{name}:", (), {"indent": 1}
-                    for msg in hal_report_to_terminal(report, 1):
-                        yield msg
-        else:
-            for name, res in self.results:
-                yield f"{name}:", (), {}
-                for msg in hal_report_to_terminal(res.total, 0):
-                    yield msg
 
     def _to_dicts(self):
         """Format the results as a dictionary of dictionaries."""
@@ -400,19 +246,3 @@ class HCHarvester(Harvester):
                         result[filename][k] = v._asdict()
 
         return result
-
-
-def hal_report_to_terminal(report, base_indent=0):
-    """Yield lines from the HalsteadReport to print to the terminal."""
-    yield f"h1: {report.h1}", (), {"indent": 1 + base_indent}
-    yield f"h2: {report.h2}", (), {"indent": 1 + base_indent}
-    yield f"N1: {report.N1}", (), {"indent": 1 + base_indent}
-    yield f"N2: {report.N2}", (), {"indent": 1 + base_indent}
-    yield f"vocabulary: {report.vocabulary}", (), {"indent": 1 + base_indent}
-    yield f"length: {report.length}", (), {"indent": 1 + base_indent}
-    yield f"calculated_length: {report.calculated_length}", (), {"indent": 1 + base_indent}
-    yield f"volume: {report.volume}", (), {"indent": 1 + base_indent}
-    yield f"difficulty: {report.difficulty}", (), {"indent": 1 + base_indent}
-    yield f"effort: {report.effort}", (), {"indent": 1 + base_indent}
-    yield f"time: {report.time}", (), {"indent": 1 + base_indent}
-    yield f"bugs: {report.bugs}", (), {"indent": 1 + base_indent}

@@ -30,12 +30,6 @@ def func3(b=3, *args):
     pass
 
 
-def fake_to_terminal():
-    yield ("a", ("mystr",), {"error": True})
-    yield ("b", (), {})
-    yield (("p1", "p2"), (), {"indent": 1})
-
-
 def test_config_base_behavior():
     c = cli.Config(a=2, b=3)
     assert c.config_values == {"a": 2, "b": 3}
@@ -229,7 +223,7 @@ def test_encoding(mocker, log_mock):
     for h_class, cfg in mappings.items():
         for f in fnames:
             harvester = h_class([f], cfg)
-            assert not any(["error" in kw for msg, args, kw in harvester.to_terminal()])
+            assert not any(isinstance(record, dict) and "error" in record for record in harvester.as_dict().values())
 
 
 @pytest.fixture
@@ -261,30 +255,19 @@ def test_log_list(stdout_mock):
     stdout_mock.assert_called_once_with("msg\n")
 
 
-def test_log_error(mocker, stdout_mock):
-    reset_mock = mocker.patch("cronenberg.cli.RESET")
-    red_mock = mocker.patch("cronenberg.cli.RED")
-    bright_mock = mocker.patch("cronenberg.cli.BRIGHT")
-
-    bright_mock.__str__.return_value = "@"
-    red_mock.__str__.return_value = "<|||>"
-    reset_mock.__str__.return_value = "__R__"
-
+def test_log_error(stdout_mock):
     cli.log_error("mystr")
 
-    stdout_mock.assert_called_once_with("@<|||>ERROR__R__: mystr\n")
+    stdout_mock.assert_called_once_with("ERROR: mystr\n")
 
 
-def test_log_result(mocker, stdout_mock):
-    le_mock = mocker.patch("cronenberg.cli.log_error")
-    ll_mock = mocker.patch("cronenberg.cli.log_list")
+def test_log_result(mocker):
     log_mock = mocker.patch("cronenberg.cli.log")
 
     h = mocker.Mock(spec=Harvester)
     h.as_json.return_value = mocker.sentinel.json
     h.as_xml.return_value = mocker.sentinel.xml
     h.as_md.return_value = mocker.sentinel.md
-    h.to_terminal.side_effect = fake_to_terminal
 
     cli.log_result(h, json=True)
     h.as_json.assert_called_once_with()
@@ -301,17 +284,11 @@ def test_log_result(mocker, stdout_mock):
     cli.log_result(h, md=True)
     h.as_md.assert_called_once_with()
 
-    cli.log_result(h)
-    h.to_terminal.assert_called_once_with()
-
     log_mock.assert_has_calls(
         [
             mocker.call(mocker.sentinel.json, json=True, noformat=True),
             mocker.call(mocker.sentinel.json, json=True, noformat=True, xml=True, md=True),
             mocker.call(mocker.sentinel.xml, noformat=True, xml=True),
             mocker.call(mocker.sentinel.md, noformat=True, md=True),
-            mocker.call("a", error=True),
         ]
     )
-    le_mock.assert_called_once_with("mystr", indent=1)
-    ll_mock.assert_has_calls([mocker.call(["b"]), mocker.call(("p1", "p2"), indent=1)])
