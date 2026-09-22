@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 from importlib.metadata import distribution
@@ -33,7 +34,12 @@ def test_standalone_cli_analysis(tmp_path):
         text=True,
     )
 
-    assert result.stdout == (f"{source_path}\n    F 1:0 classify - A (3)\n")
+    payload = json.loads(result.stdout)
+    assert result.returncode == 0
+    assert list(payload) == [str(source_path)]
+    assert [(block["name"], block["complexity"], block["rank"]) for block in payload[str(source_path)]] == [
+        ("classify", 3, "A")
+    ]
 
 
 def test_source_metadata_points_at_this_repository():
@@ -89,6 +95,7 @@ CC_FLAGS = (
     "--md",
     "-O",
     "--output-file",
+    "--theme",
     "-h",
     "--help",
 )
@@ -151,9 +158,12 @@ def test_cc_config_min_still_filters(tmp_path):
     )
 
     assert hidden.returncode == 0
-    assert hidden.stdout == ""
+    assert json.loads(hidden.stdout) == {}
     assert shown.returncode == 0
-    assert shown.stdout == f"{source_path}\n    F 1:0 low - A (1)\n"
+    shown_payload = json.loads(shown.stdout)
+    assert [(block["name"], block["rank"], block["complexity"]) for block in shown_payload[str(source_path)]] == [
+        ("low", "A", 1)
+    ]
 
 
 def test_raw_mi_and_hal_stay_on_mando():

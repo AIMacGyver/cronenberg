@@ -6,10 +6,11 @@ import os
 import sys
 import tomllib
 from contextlib import contextmanager
-from typing import Annotated
+from typing import Annotated, Literal
 
 import typer
 from mando import Program
+from rich.console import Console
 
 import cronenberg.complexity as cc_mod
 from cronenberg.cli.colors import BRIGHT, RED, RESET
@@ -19,6 +20,7 @@ from cronenberg.cli.harvest import (
     MIHarvester,
     RawHarvester,
 )
+from cronenberg.cli.theme import cc_output_mode, render_cc, select_theme
 
 CONFIG_SECTION_NAME = "cronenberg"
 
@@ -99,12 +101,15 @@ def cc(
     xml=False,
     md=False,
     output_file=_cfg.get_value("output_file", str, None),
+    theme="auto",
 ):
     """Analyze the given Python modules and compute Cyclomatic
     Complexity (CC).
 
-    The output can be filtered using the *min* and *max* flags. In addition
-    to that, by default complexity score is not displayed.
+    A terminal shows a Rich table of rank, name, and complexity. A pipe or
+    ``--json`` prints one JSON object. ``--xml`` and ``--md`` stay available.
+
+    The output can be filtered using the *min* and *max* flags.
 
     :param paths: The paths where to find modules or packages to analyze. More
         than one path is allowed.
@@ -131,6 +136,8 @@ def cc(
         complexity.
     :param --show-closures: Add closures/inner classes to the output.
     :param -O, --output-file <str>: The output file (default to stdout).
+    :param --theme <str>: ``auto``, ``tokyo-night``, or ``light``. ``auto``
+        uses ``COLORFGBG`` when set, otherwise Tokyo Night.
     """
     config = Config(
         min=min.upper(),
@@ -146,11 +153,20 @@ def cc(
     )
     harvester = CCHarvester(paths, config)
     with outstream(output_file) as stream:
+        mode = cc_output_mode(json=json, xml=xml, md=md, is_tty=stream.isatty())
+        if mode == "rich":
+            console = Console(
+                theme=select_theme(theme, os.environ.get("COLORFGBG")),
+                file=stream,
+                highlight=False,
+            )
+            render_cc(harvester.as_dict(), console)
+            return
         log_result(
             harvester,
-            json=json,
-            xml=xml,
-            md=md,
+            json=mode == "json",
+            xml=mode == "xml",
+            md=mode == "md",
             stream=stream,
         )
 
@@ -245,11 +261,18 @@ def _cc_command(
         str | None,
         typer.Option("--output-file", "-O", help="The output file (default to stdout)."),
     ] = _cfg.get_value("output_file", str, None),
+    theme: Annotated[
+        Literal["auto", "tokyo-night", "light"],
+        typer.Option(
+            "--theme",
+            help="Color theme. auto uses COLORFGBG when set, otherwise Tokyo Night.",
+        ),
+    ] = "auto",
 ):
     """Analyze the given Python modules and compute Cyclomatic Complexity (CC).
 
-    The output can be filtered using the min and max flags. In addition to
-    that, by default complexity score is not displayed.
+    A terminal shows a Rich table of rank, name, and complexity. A pipe or
+    --json prints one JSON object.
     """
     cc(
         paths,
@@ -267,6 +290,7 @@ def _cc_command(
         xml=xml,
         md=md,
         output_file=output_file,
+        theme=theme,
     )
 
 

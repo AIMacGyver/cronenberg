@@ -155,20 +155,24 @@ def test_cli_json_bytes_ignore_pythonhashseed(tmp_path):
             assert [block["complexity"] for block in parsed[paths[0]]] == [2, 1]
 
 
-def test_cli_cc_terminal_text_stays(tmp_path):
+def test_piped_cc_matches_json_object(tmp_path):
     paths = _paths(tmp_path)
-    result = subprocess.run(
+    piped = subprocess.run(
         ["cronenberg", "cc", *paths, "-s"],
         check=False,
         capture_output=True,
         text=True,
     )
-
-    assert result.returncode == 0
-    assert result.stdout == (
-        f"{paths[0]}\n"
-        "    F 4:0 high - A (2)\n"
-        "    F 1:0 low - A (1)\n"
-        f"{paths[1]}\n"
-        "    F 1:0 other - A (1)\n"
+    forced = subprocess.run(
+        ["cronenberg", "cc", *paths, "-j"],
+        check=False,
+        capture_output=True,
+        text=True,
     )
+
+    assert piped.returncode == 0
+    assert forced.returncode == 0
+    assert piped.stdout == forced.stdout
+    parsed = json.loads(piped.stdout)
+    assert [block["name"] for block in parsed[paths[0]]] == ["high", "low"]
+    assert [block["complexity"] for block in parsed[paths[0]]] == [2, 1]

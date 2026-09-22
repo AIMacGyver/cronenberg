@@ -24,10 +24,11 @@ Requirements
 
 Cronenberg requires **Python 3.11** or newer.
 
-The ``cc`` command uses `Typer <https://typer.tiangolo.com/>`__. ``raw``,
-``mi``, and ``hal`` use `mando <https://github.com/rubik/mando>`__. Colored
-terminal output uses `colorama <https://github.com/tartley/colorama>`__. If
-``colorama`` cannot be imported, command output is not colored.
+The ``cc`` command uses `Typer <https://typer.tiangolo.com/>`__ and
+`Rich <https://rich.readthedocs.io/>`__. ``raw``, ``mi``, and ``hal`` use
+`mando <https://github.com/rubik/mando>`__ and
+`colorama <https://github.com/tartley/colorama>`__. If ``colorama`` cannot
+be imported, those commands are not colored.
 
 Installation
 ------------
@@ -67,42 +68,20 @@ Python.
 Cyclomatic Complexity Example
 -----------------------------
 
-Quick example:
+On a terminal, ``cc`` prints a Rich table of each block's rank, name, and
+complexity. ``--theme`` is ``auto``, ``tokyo-night``, or ``light``. ``auto``
+reads ``COLORFGBG`` when it is set and otherwise uses Tokyo Night. ANSI
+backgrounds 7 and 15 select the light theme.
 
-.. code-block:: sh
+A pipe, ``--json``, or a non-terminal ``--output-file`` prints the same JSON
+object. ``--xml`` and ``--md`` still write those formats. ``-n`` and ``-x``
+still limit which ranks are included.
 
-    $ cronenberg cc sympy/solvers/solvers.py -a -nc
-    sympy/solvers/solvers.py
-        F 346:0 solve - F
-        F 1093:0 _solve - F
-        F 1434:0 _solve_system - F
-        F 2647:0 unrad - F
-        F 110:0 checksol - F
-        F 2238:0 _tsolve - F
-        F 2482:0 _invert - F
-        F 1862:0 solve_linear_system - E
-        F 1781:0 minsolve_linear_system - D
-        F 1636:0 solve_linear - D
-        F 2382:0 nsolve - C
+.. code-block:: text
 
-    11 blocks (classes, functions, methods) analyzed.
-    Average complexity: F (61.0)
-
-Explanation:
-
-* ``cc`` computes cyclomatic complexity.
-* ``-a`` calculates the average complexity at the end. The average is
-  computed among the *shown* blocks. For the average among all blocks, use
-  ``--total-average``.
-* ``-nc`` prints only results with a complexity rank of C or worse. Other
-  examples: ``-na`` (from A to F), or ``-nd`` (from D to F).
-* The letter *in front of* the line numbers represents the type of the block
-  (**F** means function, **M** method and **C** class).
-
-Output can be colored:
-
-.. image:: https://cloud.githubusercontent.com/assets/238549/3707477/5793aeaa-1435-11e4-98fb-00e0bd8137f5.png
-    :alt: Colored cyclomatic complexity output
+    path/to/module.py
+    Rank  Name      Complexity
+    A     classify  3
 
 **Note about file encoding**
 
