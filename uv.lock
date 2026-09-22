@@ -36,6 +36,7 @@ source = { editable = "." }
 dependencies = [
     { name = "colorama" },
     { name = "mando" },
+    { name = "rich" },
     { name = "typer" },
 ]
 
@@ -51,6 +52,7 @@ dev = [
 requires-dist = [
     { name = "colorama", specifier = ">=0.4.1" },
     { name = "mando", specifier = ">=0.6,<0.8" },
+    { name = "rich", specifier = ">=15.0.0" },
     { name = "typer", specifier = ">=0.27.2" },
 ]
 
