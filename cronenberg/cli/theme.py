@@ -1,7 +1,6 @@
 """Rich themes for terminal command output."""
 
-from collections.abc import Iterator
-
+from rich import box
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
@@ -107,7 +106,12 @@ def cc_output_mode(*, json: bool, xml: bool, md: bool, is_tty: bool) -> str:
 
 
 def render_cc(payload: dict, console: Console) -> None:
-    """Render a cc result dictionary.
+    """Render cyclomatic complexity as one Rich table per group.
+
+    The file path stays a heading. Module-level functions share one table.
+    Each class is a table titled with the class name, and its methods are the
+    rows. Closures of a function or method are a separate table under that
+    name. Block order is preserved within each group.
 
     Args:
         payload: Filenames mapped to block lists or error records. File order
@@ -120,17 +124,7 @@ def render_cc(payload: dict, console: Console) -> None:
         if isinstance(blocks, dict) and "error" in blocks:
             console.print(str(blocks["error"]), style="cc.error")
             continue
-        table = Table(show_header=True, header_style="cc.file", box=None, pad_edge=False)
-        table.add_column("Rank")
-        table.add_column("Name")
-        table.add_column("Complexity")
-        for rank, block_name, complexity in _cc_rows(blocks):
-            table.add_row(
-                Text(rank, style=_rank_style(rank)),
-                Text(block_name, style="cc.name"),
-                Text(complexity, style="cc.complexity"),
-            )
-        console.print(table)
+        _render_cc_groups(blocks, console)
 
 
 def render_raw(payload: dict, console: Console) -> None:
@@ -177,7 +171,10 @@ def render_mi(payload: dict, console: Console) -> None:
 
 
 def render_hal(payload: dict, console: Console) -> None:
-    """Render a Halstead dictionary.
+    """Render Halstead metrics as one table for the total and one per function.
+
+    The file path stays a heading. The module total is one table, followed by
+    a table for each function in record order.
 
     Args:
         payload: Filenames mapped to ``total`` and ``functions`` records, in
@@ -189,15 +186,13 @@ def render_hal(payload: dict, console: Console) -> None:
         if isinstance(record, dict) and "error" in record and "total" not in record:
             console.print(str(record["error"]), style="cc.error")
             continue
-        console.print("total", style="cc.name")
-        _print_metric_table(console, record.get("total") or {})
+        _print_metric_table(console, record.get("total") or {}, title="total")
         for function_name, metrics in (record.get("functions") or {}).items():
-            console.print(function_name, style="cc.name")
-            _print_metric_table(console, metrics)
+            _print_metric_table(console, metrics, title=str(function_name))
 
 
-def _print_metric_table(console: Console, metrics: dict) -> None:
-    table = Table(show_header=True, header_style="cc.file", box=None, pad_edge=False)
+def _print_metric_table(console: Console, metrics: dict, title: str | None = None) -> None:
+    table = _bordered_table(title)
     table.add_column("Metric")
     table.add_column("Value")
     for key, value in metrics.items():
@@ -205,16 +200,89 @@ def _print_metric_table(console: Console, metrics: dict) -> None:
     console.print(table)
 
 
-def _cc_rows(blocks: object) -> Iterator[tuple[str, str, str]]:
+def _bordered_table(title: str | None = None) -> Table:
+    return Table(
+        title=title,
+        title_style="cc.name",
+        show_header=True,
+        header_style="cc.file",
+        box=box.ROUNDED,
+    )
+
+
+def _render_cc_groups(blocks: object, console: Console) -> None:
     if not isinstance(blocks, list):
         return
-    for block in blocks:
-        if not isinstance(block, dict):
+    entries = [block for block in blocks if isinstance(block, dict)]
+    functions: list[dict] = []
+    class_rows: dict[str, list[dict]] = {}
+    sequence: list[tuple[str, str | None]] = []
+    seen_classes: set[str] = set()
+    seen_functions = False
+    for block in entries:
+        if _is_class_block(block):
+            name = str(block.get("name", ""))
+            if name not in seen_classes:
+                sequence.append(("class", name))
+                seen_classes.add(name)
+                class_rows[name] = []
+            for method in block.get("methods") or []:
+                if isinstance(method, dict):
+                    class_rows[name].append(method)
+        elif _is_method_block(block):
+            name = str(block.get("classname") or "")
+            if name not in seen_classes:
+                sequence.append(("class", name))
+                seen_classes.add(name)
+                class_rows[name] = []
+            class_rows[name].append(block)
+        else:
+            functions.append(block)
+            if not seen_functions:
+                sequence.append(("functions", None))
+                seen_functions = True
+    for kind, name in sequence:
+        if kind == "functions":
+            _print_cc_table(console, functions)
+            for function in functions:
+                _render_closure_tables(function, console)
             continue
-        if "rank" in block and "name" in block:
-            yield str(block["rank"]), str(block["name"]), str(block.get("complexity", ""))
-        for key in ("methods", "closures"):
-            yield from _cc_rows(block.get(key) or [])
+        methods = class_rows[name or ""]
+        _print_cc_table(console, methods, title=name)
+        for method in methods:
+            _render_closure_tables(method, console)
+
+
+def _print_cc_table(console: Console, rows: list[dict], title: str | None = None) -> None:
+    table = _bordered_table(title)
+    table.add_column("Rank")
+    table.add_column("Name")
+    table.add_column("Complexity")
+    for block in rows:
+        rank = str(block.get("rank", ""))
+        table.add_row(
+            Text(rank, style=_rank_style(rank)),
+            Text(str(block.get("name", "")), style="cc.name"),
+            Text(str(block.get("complexity", "")), style="cc.complexity"),
+        )
+    console.print(table)
+
+
+def _render_closure_tables(block: dict, console: Console) -> None:
+    closures = [closure for closure in (block.get("closures") or []) if isinstance(closure, dict)]
+    if not closures:
+        return
+    _print_cc_table(console, closures, title=str(block.get("name", "")))
+    for closure in closures:
+        _render_closure_tables(closure, console)
+
+
+def _is_class_block(block: dict) -> bool:
+    return block.get("type") == "class" or "methods" in block
+
+
+def _is_method_block(block: dict) -> bool:
+    return block.get("type") == "method" or bool(block.get("classname"))
 
 
 def _rank_style(rank: str) -> str:
