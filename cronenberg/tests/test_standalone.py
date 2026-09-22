@@ -327,25 +327,112 @@ def test_mi_multi_flag_inverts_the_default(tmp_path):
     assert json.loads(flagged.stdout)[str(source_path)]["mi"] == mi_visit(source, False)
 
 
-def test_hal_stays_on_mando():
+HAL_FLAGS = (
+    "-e",
+    "--exclude",
+    "-i",
+    "--ignore",
+    "-j",
+    "--json",
+    "-f",
+    "--functions",
+    "-O",
+    "--output-file",
+    "-h",
+    "--help",
+)
+
+_HAL_ZEROS = {
+    "h1": 0,
+    "h2": 0,
+    "N1": 0,
+    "N2": 0,
+    "vocabulary": 0,
+    "length": 0,
+    "calculated_length": 0,
+    "volume": 0,
+    "difficulty": 0,
+    "effort": 0,
+    "time": 0.0,
+    "bugs": 0.0,
+}
+
+
+def test_hal_help_lists_existing_flags():
+    help_result = subprocess.run(
+        ["cronenberg", "hal", "--help"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     root = subprocess.run(
         ["cronenberg", "--help"],
         check=True,
         capture_output=True,
         text=True,
     )
-    hal_help = subprocess.run(
-        ["cronenberg", "hal", "--help"],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
 
+    assert "Usage: cronenberg hal" in help_result.stdout
+    assert all(flag in help_result.stdout for flag in HAL_FLAGS)
     assert "usage: cronenberg" in root.stdout
     for name in ("cc", "raw", "mi", "hal"):
         assert name in root.stdout
-    assert "usage: cronenberg hal" in hal_help.stdout
-    assert "--json" in hal_help.stdout
+
+
+def test_hal_fixture_matches_terminal_text_and_json(tmp_path):
+    source_path = tmp_path / "mod.py"
+    source_path.write_text("def other():\n    return 0\n")
+    env = os.environ.copy()
+    env["HOME"] = str(tmp_path)
+    env.pop("CRONENBERGCFG", None)
+
+    terminal = subprocess.run(
+        ["cronenberg", "hal", str(source_path)],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+        cwd=tmp_path,
+    )
+    by_function = subprocess.run(
+        ["cronenberg", "hal", str(source_path), "-f"],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+        cwd=tmp_path,
+    )
+    parsed_json = subprocess.run(
+        ["cronenberg", "hal", str(source_path), "-j"],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+        cwd=tmp_path,
+    )
+
+    assert terminal.returncode == 0
+    assert terminal.stdout == (
+        f"{source_path}:\n"
+        "    h1: 0\n"
+        "    h2: 0\n"
+        "    N1: 0\n"
+        "    N2: 0\n"
+        "    vocabulary: 0\n"
+        "    length: 0\n"
+        "    calculated_length: 0\n"
+        "    volume: 0\n"
+        "    difficulty: 0\n"
+        "    effort: 0\n"
+        "    time: 0.0\n"
+        "    bugs: 0.0\n"
+    )
+    assert by_function.returncode == 0
+    assert f"{source_path}:\n    other:\n        h1: 0\n" in by_function.stdout
+    assert parsed_json.returncode == 0
+    payload = json.loads(parsed_json.stdout)
+    assert payload[str(source_path)]["total"] == _HAL_ZEROS
+    assert payload[str(source_path)]["functions"]["other"] == _HAL_ZEROS
 
 
 def test_removed_hosted_integration_is_absent():

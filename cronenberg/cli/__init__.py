@@ -84,6 +84,10 @@ program._subparsers.add_parser(
     "mi",
     help="Analyze the given Python modules and compute the Maintainability Index.",
 )
+program._subparsers.add_parser(
+    "hal",
+    help="Analyze the given Python modules and compute their Halstead metrics.",
+)
 
 cc_app = typer.Typer(
     add_completion=False,
@@ -100,9 +104,15 @@ mi_app = typer.Typer(
     pretty_exceptions_enable=False,
     context_settings={"help_option_names": ["-h", "--help"]},
 )
+hal_app = typer.Typer(
+    add_completion=False,
+    pretty_exceptions_enable=False,
+    context_settings={"help_option_names": ["-h", "--help"]},
+)
 
 _MI_MULTI_DEFAULT = _cfg.get_value("multi", bool, True)
 _MI_SHOW_DEFAULT = _cfg.get_value("show_mi", bool, False)
+_HAL_FUNCTIONS_DEFAULT = _cfg.get_value("functions", bool, False)
 
 
 def _mando_bool(default: bool, given: bool) -> bool:
@@ -605,14 +615,12 @@ def _mi_command(
     )
 
 
-@program.command
-@program.arg("paths", nargs="+")
 def hal(
     paths,
     exclude=_cfg.get_value("exclude", str, None),
     ignore=_cfg.get_value("ignore", str, None),
     json=False,
-    functions=_cfg.get_value("functions", bool, False),
+    functions=_HAL_FUNCTIONS_DEFAULT,
     output_file=_cfg.get_value("output_file", str, None),
 ):
     """
@@ -643,6 +651,70 @@ def hal(
     harvester = HCHarvester(paths, config)
     with outstream(output_file) as stream:
         log_result(harvester, json=json, xml=False, md=False, stream=stream)
+
+
+@hal_app.command("hal")
+def _hal_command(
+    paths: Annotated[
+        list[str],
+        typer.Argument(
+            help=(
+                "The paths where to find modules or packages to analyze. More "
+                "than one path is allowed."
+            )
+        ),
+    ],
+    exclude: Annotated[
+        str | None,
+        typer.Option(
+            "--exclude",
+            "-e",
+            help=(
+                "Exclude files only when their path matches one of these glob "
+                "patterns. Usually needs quoting at the command line."
+            ),
+        ),
+    ] = _cfg.get_value("exclude", str, None),
+    ignore: Annotated[
+        str | None,
+        typer.Option(
+            "--ignore",
+            "-i",
+            help=(
+                "Ignore directories when their name matches one of these glob "
+                "patterns: cronenberg won't even descend into them. By default, "
+                "hidden directories (starting with '.') are ignored."
+            ),
+        ),
+    ] = _cfg.get_value("ignore", str, None),
+    json_output: Annotated[bool, typer.Option("--json", "-j", help="Format results in JSON.")] = False,
+    functions: Annotated[
+        bool,
+        typer.Option(
+            "--functions",
+            "-f",
+            help="Analyze files by top-level functions instead of as a whole.",
+        ),
+    ] = False,
+    output_file: Annotated[
+        str | None,
+        typer.Option("--output-file", "-O", help="The output file (default to stdout)."),
+    ] = _cfg.get_value("output_file", str, None),
+):
+    """Analyze the given Python modules and compute their Halstead metrics.
+
+    The Halstead metrics are a series of measurements meant to quantitatively
+    measure the complexity of code, including the difficulty a programmer would
+    have in writing it.
+    """
+    hal(
+        paths,
+        exclude=exclude,
+        ignore=ignore,
+        json=json_output,
+        functions=_mando_bool(_HAL_FUNCTIONS_DEFAULT, functions),
+        output_file=output_file,
+    )
 
 
 class Config:
