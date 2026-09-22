@@ -35,9 +35,10 @@ class Harvester:
        should not be subclassed. Instead, the :meth:`gobble` method should be
        implemented.
 
-    3. **Reporting**: the methods *as_json* and *as_xml* return a string
-       with the corresponding format. The method *to_terminal* is a generator
-       that yields the lines to be printed in the terminal.
+    3. **Reporting**: :meth:`as_dict` returns one dictionary.
+       :meth:`as_json` dumps that dictionary with sorted object keys.
+       :meth:`as_xml` returns XML when implemented. :meth:`to_terminal` yields
+       the lines to print in the terminal.
 
     This class is meant to be subclasses and cannot be used directly, since
     the methods :meth:`gobble`, :meth:`as_xml` and :meth:`to_terminal` are
@@ -100,9 +101,22 @@ class Harvester:
             return self._results
         return caching_iterator(self.run(), self._results)
 
+    def as_dict(self):
+        """Return analysis results as one dictionary.
+
+        Returns:
+            A mapping of each filename to its analysis record.
+        """
+        return dict(self.results)
+
     def as_json(self):
-        """Format the results as JSON."""
-        return json.dumps(dict(self.results))
+        """Format the results as JSON.
+
+        Returns:
+            JSON text for :meth:`as_dict` with object keys sorted, so two
+            runs emit the same bytes.
+        """
+        return json.dumps(self.as_dict(), sort_keys=True)
 
     def as_xml(self):
         """Format the results as XML."""
@@ -143,9 +157,14 @@ class CCHarvester(Harvester):
                 result[key] = values
         return result
 
-    def as_json(self):
-        """Format the results as JSON."""
-        return json.dumps(self._to_dicts())
+    def as_dict(self):
+        """Return Cyclomatic Complexity results as one dictionary.
+
+        Returns:
+            A mapping of each filename to ranked blocks in analysis order, or
+            to an error record.
+        """
+        return self._to_dicts()
 
     def as_xml(self):
         """Format the results as XML. This is meant to be compatible with
@@ -209,6 +228,15 @@ class RawHarvester(Harvester):
     def gobble(self, fobj):
         """Analyze the content of the file object."""
         return raw_to_dict(analyze(fobj.read()))
+
+    def as_dict(self):
+        """Return raw metrics as one dictionary.
+
+        Returns:
+            A mapping of each filename to its raw metric record. Summary
+            totals are not included.
+        """
+        return dict(self.results)
 
     def as_xml(self):
         """Placeholder method. Currently not implemented."""
@@ -294,9 +322,14 @@ class MIHarvester(Harvester):
             return sorted(results, key=lambda el: el[1]["mi"])
         return results
 
-    def as_json(self):
-        """Format the results as JSON."""
-        return json.dumps(dict(self.filtered_results))
+    def as_dict(self):
+        """Return Maintainability Index results as one dictionary.
+
+        Returns:
+            A mapping of each filename whose rank is inside the configured
+            range to its MI record. Error records are always included.
+        """
+        return dict(self.filtered_results)
 
     def as_xml(self):
         """Placeholder method. Currently not implemented."""
@@ -328,10 +361,14 @@ class HCHarvester(Harvester):
         code = fobj.read()
         return h_visit(code)
 
-    def as_json(self):
-        """Format the results as JSON."""
-        result_dict = self._to_dicts()
-        return json.dumps(result_dict)
+    def as_dict(self):
+        """Return Halstead results as one dictionary.
+
+        Returns:
+            A mapping of each filename to module and function Halstead
+            records, or to an error record.
+        """
+        return self._to_dicts()
 
     def to_terminal(self):
         """Yield lines to be printed to the terminal."""
