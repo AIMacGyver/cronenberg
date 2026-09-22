@@ -10,7 +10,6 @@ import sys
 import xml.etree.ElementTree as et
 from contextlib import contextmanager
 
-from cronenberg.cli.colors import BRIGHT, LETTERS_COLORS, RANKS_COLORS, RESET, TEMPLATE
 from cronenberg.complexity import cc_rank
 from cronenberg.visitors import Function
 
@@ -168,57 +167,3 @@ def dict_to_md(results):
                 filename, name, type, block["lineno"], block["endline"], block["complexity"], block["rank"]
             )
     return md_string
-
-
-def cc_to_terminal(results, show_complexity, min, max, total_average):
-    """Transform Cyclomatic Complexity results into a 3-elements tuple:
-
-        ``(res, total_cc, counted)``
-
-    `res` is a list holding strings that are specifically formatted to be
-    printed to a terminal.
-    `total_cc` is a number representing the total analyzed cyclomatic
-    complexity.
-    `counted` holds the number of the analyzed blocks.
-
-    If *show_complexity* is `True`, then the complexity of a block will be
-    shown in the terminal line alongside its rank.
-    *min* and *max* are used to control which blocks are shown in the resulting
-    list. A block is formatted only if its rank is `min <= rank <= max`.
-    If *total_average* is `True`, the `total_cc` and `counted` count every
-    block, regardless of the fact that they are formatted in `res` or not.
-    """
-    res = []
-    counted = 0
-    total_cc = 0.0
-    for line in results:
-        ranked = cc_rank(line.complexity)
-        if min <= ranked <= max:
-            total_cc += line.complexity
-            counted += 1
-            res.append(_format_line(line, ranked, show_complexity))
-        elif total_average:
-            total_cc += line.complexity
-            counted += 1
-    return res, total_cc, counted
-
-
-def _format_line(block, ranked, show_complexity=False):
-    """Format a single block as a line.
-
-    *ranked* is the rank given by the `~cronenberg.complexity.rank` function. If
-    *show_complexity* is True, then the complexity score is added alongside.
-    """
-    letter_colored = LETTERS_COLORS[block.letter] + block.letter
-    rank_colored = RANKS_COLORS[ranked] + ranked
-    compl = "" if not show_complexity else f" ({block.complexity})"
-    return TEMPLATE.format(
-        BRIGHT,
-        letter_colored,
-        block.lineno,
-        block.col_offset,
-        block.fullname,
-        rank_colored,
-        compl,
-        reset=RESET,
-    )

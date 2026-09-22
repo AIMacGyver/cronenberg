@@ -3,11 +3,16 @@ try:
 except ImportError:
     import collections as collections_abc
 
+import io
+import json
+
 import pytest
+from rich.console import Console
 
 import cronenberg.cli.harvest as harvest
 import cronenberg.complexity as cc_mod
 from cronenberg.cli import Config
+from cronenberg.cli.theme import TOKYO_NIGHT, render_cc, render_mi, render_raw
 
 BASE_CONFIG = Config(
     exclude=r"test_[^.]+\.py",
@@ -98,10 +103,18 @@ def test_base_as_md_not_implemented(base_config):
         h.as_md()
 
 
-def test_base_to_terminal_not_implemented(base_config):
-    h = harvest.Harvester([], base_config)
-    with pytest.raises(NotImplementedError):
-        h.to_terminal()
+def _rich_text(render, payload):
+    console = Console(
+        theme=TOKYO_NIGHT,
+        file=io.StringIO(),
+        force_terminal=True,
+        width=80,
+        highlight=False,
+        color_system="truecolor",
+        record=True,
+    )
+    render(payload, console)
+    return console.export_text(styles=False)
 
 
 def test_base_run(base_config):
@@ -193,35 +206,15 @@ def test_cc_as_md(cc_config, mocker):
     assert to_dicts_mock.call_count == 1
 
 
-def test_cc_to_terminal(cc_config, mocker):
-    reset_mock = mocker.patch("cronenberg.cli.harvest.RESET")
-    ranks_mock = mocker.patch("cronenberg.cli.harvest.RANKS_COLORS")
-    c2t_mock = mocker.patch("cronenberg.cli.harvest.cc_to_terminal")
+def test_cc_error_stays_in_json_and_rich(cc_config):
     h = harvest.CCHarvester([], cc_config)
-    h._results = [("a", {"error": "mystr"}), ("b", {})]
-    c2t_mock.return_value = (["res"], 9, 3)
-    ranks_mock.__getitem__.return_value = "<|A|>"
-    reset_mock.__eq__.side_effect = lambda o: o == "__R__"
+    h._results = [("a.py", {"error": "mystr"})]
 
-    results = list(h.to_terminal())
-    c2t_mock.assert_called_once_with(
-        {},
-        cc_config.show_complexity,
-        cc_config.min,
-        cc_config.max,
-        cc_config.total_average,
-    )
-    assert results == [
-        ("a", ("mystr",), {"error": True}),
-        ("b", (), {}),
-        (["res"], (), {"indent": 1}),
-        ("\n{0} blocks (classes, functions, methods) analyzed.", (3,), {}),
-        (
-            "Average complexity: {0}{1} ({2}){3}",
-            ("<|A|>", "A", 3, "__R__"),
-            {},
-        ),
-    ]
+    payload = json.loads(h.as_json())
+    assert payload == {"a.py": {"error": "mystr"}}
+    text = _rich_text(render_cc, h.as_dict())
+    assert "a.py" in text
+    assert "mystr" in text
 
 
 def test_raw_gobble(raw_config, mocker):
@@ -245,9 +238,9 @@ def test_raw_as_xml(raw_config):
         h.as_xml()
 
 
-def test_raw_to_terminal(raw_config):
+def test_raw_error_and_metrics_json_and_rich(raw_config):
     h = harvest.RawHarvester([], raw_config)
-    h._results = [
+    records = [
         ("a", {"error": "mystr"}),
         (
             "b",
@@ -261,83 +254,15 @@ def test_raw_to_terminal(raw_config):
                 "blank": 9,
             },
         ),
-        (
-            "c",
-            {
-                "loc": 24,
-                "lloc": 27,
-                "sloc": 15,
-                "comments": 3,
-                "multi": 3,
-                "single_comments": 13,
-                "blank": 9,
-            },
-        ),
-        (
-            "e",
-            {
-                "loc": 0,
-                "lloc": 0,
-                "sloc": 0,
-                "comments": 0,
-                "single_comments": 12,
-                "multi": 0,
-                "blank": 0,
-            },
-        ),
     ]
+    h._results = records
 
-    assert list(h.to_terminal()) == [
-        ("a", ("mystr",), {"error": True}),
-        ("b", (), {}),
-        ("{0}: {1}", ("LOC", 24), {"indent": 1}),
-        ("{0}: {1}", ("LLOC", 27), {"indent": 1}),
-        ("{0}: {1}", ("SLOC", 15), {"indent": 1}),
-        ("{0}: {1}", ("Comments", 3), {"indent": 1}),
-        ("{0}: {1}", ("Single comments", 3), {"indent": 1}),
-        ("{0}: {1}", ("Multi", 3), {"indent": 1}),
-        ("{0}: {1}", ("Blank", 9), {"indent": 1}),
-        ("- Comment Stats", (), {"indent": 1}),
-        ("(C % L): {0:.0%}", (0.125,), {"indent": 2}),
-        ("(C % S): {0:.0%}", (0.2,), {"indent": 2}),
-        ("(C + M % L): {0:.0%}", (0.25,), {"indent": 2}),
-        ("c", (), {}),
-        ("{0}: {1}", ("LOC", 24), {"indent": 1}),
-        ("{0}: {1}", ("LLOC", 27), {"indent": 1}),
-        ("{0}: {1}", ("SLOC", 15), {"indent": 1}),
-        ("{0}: {1}", ("Comments", 3), {"indent": 1}),
-        ("{0}: {1}", ("Single comments", 13), {"indent": 1}),
-        ("{0}: {1}", ("Multi", 3), {"indent": 1}),
-        ("{0}: {1}", ("Blank", 9), {"indent": 1}),
-        ("- Comment Stats", (), {"indent": 1}),
-        ("(C % L): {0:.0%}", (0.125,), {"indent": 2}),
-        ("(C % S): {0:.0%}", (0.2,), {"indent": 2}),
-        ("(C + M % L): {0:.0%}", (0.25,), {"indent": 2}),
-        ("e", (), {}),
-        ("{0}: {1}", ("LOC", 0), {"indent": 1}),
-        ("{0}: {1}", ("LLOC", 0), {"indent": 1}),
-        ("{0}: {1}", ("SLOC", 0), {"indent": 1}),
-        ("{0}: {1}", ("Comments", 0), {"indent": 1}),
-        ("{0}: {1}", ("Single comments", 12), {"indent": 1}),
-        ("{0}: {1}", ("Multi", 0), {"indent": 1}),
-        ("{0}: {1}", ("Blank", 0), {"indent": 1}),
-        ("- Comment Stats", (), {"indent": 1}),
-        ("(C % L): {0:.0%}", (0.0,), {"indent": 2}),
-        ("(C % S): {0:.0%}", (0.0,), {"indent": 2}),
-        ("(C + M % L): {0:.0%}", (0.0,), {"indent": 2}),
-        ("** Total **", (), {}),
-        ("{0}: {1}", ("LOC", 48), {"indent": 1}),
-        ("{0}: {1}", ("LLOC", 54), {"indent": 1}),
-        ("{0}: {1}", ("SLOC", 30), {"indent": 1}),
-        ("{0}: {1}", ("Comments", 6), {"indent": 1}),
-        ("{0}: {1}", ("Single comments", 28), {"indent": 1}),
-        ("{0}: {1}", ("Multi", 6), {"indent": 1}),
-        ("{0}: {1}", ("Blank", 18), {"indent": 1}),
-        ("- Comment Stats", (), {"indent": 1}),
-        ("(C % L): {0:.0%}", (0.125,), {"indent": 2}),
-        ("(C % S): {0:.0%}", (0.2,), {"indent": 2}),
-        ("(C + M % L): {0:.0%}", (0.25,), {"indent": 2}),
-    ]
+    assert h.as_dict() == dict(records)
+    assert json.loads(h.as_json())["a"] == {"error": "mystr"}
+    text = _rich_text(render_raw, h.as_dict())
+    assert "mystr" in text
+    assert "loc" in text
+    assert "24" in text
 
 
 def test_mi_gobble(mi_config, mocker):
@@ -375,12 +300,7 @@ def test_mi_as_xml(mi_config):
         h.as_xml()
 
 
-def test_mi_to_terminal(mi_config, mocker):
-    reset_mock = mocker.patch("cronenberg.cli.harvest.RESET")
-    ranks_mock = mocker.patch("cronenberg.cli.harvest.MI_RANKS")
-    ranks_mock.__getitem__.side_effect = lambda j: f"<|{j}|>"
-    reset_mock.__eq__.side_effect = lambda o: o == "__R__"
-
+def test_mi_filtered_error_json_and_rich(mi_config):
     h = harvest.MIHarvester([], mi_config)
     h._results = [
         ("a", {"error": "mystr"}),
@@ -389,8 +309,13 @@ def test_mi_to_terminal(mi_config, mocker):
         ("d", {"mi": 0, "rank": "C"}),
     ]
 
-    assert list(h.to_terminal()) == [
-        ("a", ("mystr",), {"error": True}),
-        ("{0} - {1}{2}{3}{4}", ("c", "<|B|>", "B", " (15.00)", "__R__"), {}),
-        ("{0} - {1}{2}{3}{4}", ("d", "<|C|>", "C", " (0.00)", "__R__"), {}),
-    ]
+    assert json.loads(h.as_json()) == {
+        "a": {"error": "mystr"},
+        "c": {"mi": 15, "rank": "B"},
+        "d": {"mi": 0, "rank": "C"},
+    }
+    text = _rich_text(render_mi, h.as_dict())
+    assert "mystr" in text
+    assert "B" in text
+    assert "C" in text
+    assert list(h.as_dict()) == ["a", "c", "d"]

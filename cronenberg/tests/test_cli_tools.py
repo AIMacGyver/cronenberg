@@ -1,10 +1,14 @@
 import importlib
+import io
+import json
 import os
 import sys
 
 import pytest
+from rich.console import Console
 
 import cronenberg.cli.tools as tools
+from cronenberg.cli.theme import TOKYO_NIGHT, render_cc
 from cronenberg.raw import Module
 from cronenberg.visitors import Class, Function
 
@@ -530,56 +534,30 @@ CC_TO_TERMINAL_CASES = [
 ]
 
 
-def test_cc_to_terminal():
-    # do the patching
-    tools.LETTERS_COLORS = dict((letter, f"<!{letter}!>") for letter in "FMC")
-    tools.RANKS_COLORS = dict((r, f"<|{r}|>") for r in "ABCDEF")
-    tools.BRIGHT = "@"
-    tools.RESET = "__R__"
-
-    results = CC_TO_TERMINAL_CASES
-    res = [
-        "@<!C!>C __R__17:0 Classname - <|A|>A (4)__R__",
-        "@<!M!>M __R__19:4 Classname.meth - <|B|>B (7)__R__",
-        "@<!F!>F __R__12:0 f1 - <|C|>C (14)__R__",
-        "@<!F!>F __R__12:0 f2 - <|D|>D (22)__R__",
-        "@<!F!>F __R__12:0 f3 - <|E|>E (32)__R__",
-        "@<!F!>F __R__12:0 f4 - <|F|>F (41)__R__",
+def test_cc_blocks_json_and_rich_rendering():
+    blocks = [tools.cc_to_dict(block) for block in CC_TO_TERMINAL_CASES]
+    assert [(block["name"], block["rank"], block["complexity"]) for block in blocks] == [
+        ("Classname", "A", 4),
+        ("meth", "B", 7),
+        ("f1", "C", 14),
+        ("f2", "D", 22),
+        ("f3", "E", 32),
+        ("f4", "F", 41),
     ]
-    res_noshow = ["{}__R__".format(r[: r.index("(") - 1]) for r in res]
+    payload = {"mod.py": blocks}
+    assert json.loads(json.dumps(blocks))[0]["rank"] == "A"
 
-    assert tools.cc_to_terminal(results, False, "A", "F", False) == (
-        res_noshow,
-        120,
-        6,
+    console = Console(
+        theme=TOKYO_NIGHT,
+        file=io.StringIO(),
+        force_terminal=True,
+        width=80,
+        highlight=False,
+        color_system="truecolor",
+        record=True,
     )
-    assert tools.cc_to_terminal(results, True, "A", "F", False) == (
-        res,
-        120,
-        6,
-    )
-    assert tools.cc_to_terminal(results, True, "A", "D", False) == (
-        res[:-2],
-        47,
-        4,
-    )
-    assert tools.cc_to_terminal(results, False, "A", "D", False) == (
-        res_noshow[:-2],
-        47,
-        4,
-    )
-    assert tools.cc_to_terminal(results, True, "C", "F", False) == (
-        res[2:],
-        109,
-        4,
-    )
-    assert tools.cc_to_terminal(results, True, "B", "E", False) == (
-        res[1:-1],
-        75,
-        4,
-    )
-    assert tools.cc_to_terminal(results, True, "B", "F", True) == (
-        res[1:],
-        120,
-        6,
-    )
+    render_cc(payload, console)
+    text = console.export_text(styles=False)
+    assert "Classname" in text
+    assert "f4" in text
+    assert "F" in text
