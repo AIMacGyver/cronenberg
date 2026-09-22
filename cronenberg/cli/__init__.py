@@ -20,7 +20,7 @@ from cronenberg.cli.harvest import (
     MIHarvester,
     RawHarvester,
 )
-from cronenberg.cli.theme import cc_output_mode, render_cc, select_theme
+from cronenberg.cli.theme import cc_output_mode, render_cc, render_raw, select_theme
 
 CONFIG_SECTION_NAME = "cronenberg"
 
@@ -310,8 +310,12 @@ def raw(
     summary=False,
     json=False,
     output_file=_cfg.get_value("output_file", str, None),
+    theme="auto",
 ):
     """Analyze the given Python modules and compute raw metrics.
+
+    A terminal shows a Rich table of the JSON metrics. A pipe or ``--json``
+    prints one JSON object. The summary is not part of that object.
 
     :param paths: The paths where to find modules or packages to analyze. More
         than one path is allowed.
@@ -325,6 +329,8 @@ def raw(
     :param -j, --json: Format results in JSON. Note that the JSON export does
         not include the summary (enabled with `-s, --summary`).
     :param -O, --output-file <str>: The output file (default to stdout).
+    :param --theme <str>: ``auto``, ``tokyo-night``, or ``light``. ``auto``
+        uses ``COLORFGBG`` when set, otherwise Tokyo Night.
     """
     config = Config(
         exclude=exclude,
@@ -333,7 +339,16 @@ def raw(
     )
     harvester = RawHarvester(paths, config)
     with outstream(output_file) as stream:
-        log_result(harvester, json=json, stream=stream)
+        mode = cc_output_mode(json=json, xml=False, md=False, is_tty=stream.isatty())
+        if mode == "rich":
+            console = Console(
+                theme=select_theme(theme, os.environ.get("COLORFGBG")),
+                file=stream,
+                highlight=False,
+            )
+            render_raw(harvester.as_dict(), console)
+            return
+        log_result(harvester, json=mode == "json", stream=stream)
 
 
 @raw_app.command("raw")
@@ -390,8 +405,19 @@ def _raw_command(
         str | None,
         typer.Option("--output-file", "-O", help="The output file (default to stdout)."),
     ] = _cfg.get_value("output_file", str, None),
+    theme: Annotated[
+        Literal["auto", "tokyo-night", "light"],
+        typer.Option(
+            "--theme",
+            help="Color theme. auto uses COLORFGBG when set, otherwise Tokyo Night.",
+        ),
+    ] = "auto",
 ):
-    """Analyze the given Python modules and compute raw metrics."""
+    """Analyze the given Python modules and compute raw metrics.
+
+    A terminal shows a Rich table of the JSON metrics. A pipe or --json
+    prints one JSON object.
+    """
     raw(
         paths,
         exclude=exclude,
@@ -399,6 +425,7 @@ def _raw_command(
         summary=summary,
         json=json_output,
         output_file=output_file,
+        theme=theme,
     )
 
 

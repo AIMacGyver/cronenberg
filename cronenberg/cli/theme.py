@@ -133,6 +133,28 @@ def render_cc(payload: dict, console: Console) -> None:
         console.print(table)
 
 
+def render_raw(payload: dict, console: Console) -> None:
+    """Render a raw-metrics dictionary.
+
+    Args:
+        payload: Filenames mapped to metric records or error records, in
+            analysis order. Metric keys stay in record order.
+        console: Console whose theme supplies ``cc.file``, ``cc.name``, and
+            ``cc.complexity`` styles.
+    """
+    for filename, metrics in payload.items():
+        console.print(filename, style="cc.file")
+        if isinstance(metrics, dict) and "error" in metrics and "loc" not in metrics:
+            console.print(str(metrics["error"]), style="cc.error")
+            continue
+        table = Table(show_header=True, header_style="cc.file", box=None, pad_edge=False)
+        table.add_column("Metric")
+        table.add_column("Value")
+        for key, value in metrics.items():
+            table.add_row(Text(str(key), style="cc.name"), Text(str(value), style="cc.complexity"))
+        console.print(table)
+
+
 def _cc_rows(blocks: object) -> Iterator[tuple[str, str, str]]:
     if not isinstance(blocks, list):
         return
