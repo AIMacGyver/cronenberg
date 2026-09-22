@@ -6,7 +6,16 @@ import subprocess
 
 from rich.console import Console
 
-from cronenberg.cli.theme import LIGHT, TOKYO_NIGHT, cc_output_mode, render_cc, render_mi, render_raw, select_theme
+from cronenberg.cli.theme import (
+    LIGHT,
+    TOKYO_NIGHT,
+    cc_output_mode,
+    render_cc,
+    render_hal,
+    render_mi,
+    render_raw,
+    select_theme,
+)
 
 CLASSIFY = {"m.py": [{"rank": "A", "name": "classify", "complexity": 3}]}
 CLASSIFY_SNAPSHOT = "m.py\nRank  Name      Complexity\nA     classify  3         \n"
@@ -129,6 +138,35 @@ def test_mi_tty_snapshot_shows_rank_and_score():
     assert "A" in text
     assert "100.0" in text
     assert "38;2;158;206;106m" in console.file.getvalue()
+
+
+def test_hal_tty_snapshot_shows_function_and_metrics():
+    payload = {
+        "mod.py": {
+            "total": {"h1": 0, "bugs": 0.0},
+            "functions": {"other": {"h1": 0, "bugs": 0.0}},
+        }
+    }
+    console = _console(TOKYO_NIGHT, width=40)
+    render_hal(payload, console)
+    text = console.export_text(styles=False)
+
+    assert text == (
+        "mod.py\n"
+        "total\n"
+        "Metric  Value\n"
+        "h1      0    \n"
+        "bugs    0.0  \n"
+        "other\n"
+        "Metric  Value\n"
+        "h1      0    \n"
+        "bugs    0.0  \n"
+    )
+    assert "other" in text
+    assert "h1" in text
+    assert "0.0" in text
+    assert text.index("total") < text.index("other")
+    assert "38;2;192;202;245m" in console.file.getvalue()
 
 
 def test_unknown_theme_is_a_usage_error(tmp_path):

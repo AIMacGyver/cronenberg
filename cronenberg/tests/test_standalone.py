@@ -338,6 +338,7 @@ HAL_FLAGS = (
     "--functions",
     "-O",
     "--output-file",
+    "--theme",
     "-h",
     "--help",
 )
@@ -386,16 +387,8 @@ def test_hal_fixture_matches_terminal_text_and_json(tmp_path):
     env["HOME"] = str(tmp_path)
     env.pop("CRONENBERGCFG", None)
 
-    terminal = subprocess.run(
+    piped = subprocess.run(
         ["cronenberg", "hal", str(source_path)],
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-        cwd=tmp_path,
-    )
-    by_function = subprocess.run(
-        ["cronenberg", "hal", str(source_path), "-f"],
         check=False,
         capture_output=True,
         text=True,
@@ -411,27 +404,12 @@ def test_hal_fixture_matches_terminal_text_and_json(tmp_path):
         cwd=tmp_path,
     )
 
-    assert terminal.returncode == 0
-    assert terminal.stdout == (
-        f"{source_path}:\n"
-        "    h1: 0\n"
-        "    h2: 0\n"
-        "    N1: 0\n"
-        "    N2: 0\n"
-        "    vocabulary: 0\n"
-        "    length: 0\n"
-        "    calculated_length: 0\n"
-        "    volume: 0\n"
-        "    difficulty: 0\n"
-        "    effort: 0\n"
-        "    time: 0.0\n"
-        "    bugs: 0.0\n"
-    )
-    assert by_function.returncode == 0
-    assert f"{source_path}:\n    other:\n        h1: 0\n" in by_function.stdout
+    assert piped.returncode == 0
     assert parsed_json.returncode == 0
-    payload = json.loads(parsed_json.stdout)
+    assert piped.stdout == parsed_json.stdout
+    payload = json.loads(piped.stdout)
     assert payload[str(source_path)]["total"] == _HAL_ZEROS
+    assert list(payload[str(source_path)]["functions"]) == ["other"]
     assert payload[str(source_path)]["functions"]["other"] == _HAL_ZEROS
 
 
