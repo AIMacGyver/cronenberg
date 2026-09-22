@@ -206,7 +206,7 @@ def test_mi(mocker, log_mock):
             sort=False,
         ),
     )
-    log_mock.assert_called_once_with(mocker.sentinel.harvester, stream=sys.stdout, json=False)
+    log_mock.assert_called_once_with(mocker.sentinel.harvester, stream=sys.stdout, json=True)
 
 
 def test_encoding(mocker, log_mock):

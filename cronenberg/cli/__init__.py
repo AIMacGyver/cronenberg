@@ -20,7 +20,7 @@ from cronenberg.cli.harvest import (
     MIHarvester,
     RawHarvester,
 )
-from cronenberg.cli.theme import cc_output_mode, render_cc, render_raw, select_theme
+from cronenberg.cli.theme import cc_output_mode, render_cc, render_mi, render_raw, select_theme
 
 CONFIG_SECTION_NAME = "cronenberg"
 
@@ -466,12 +466,14 @@ def mi(
     json=False,
     sort=False,
     output_file=_cfg.get_value("output_file", str, None),
+    theme="auto",
 ):
     """Analyze the given Python modules and compute the Maintainability Index.
 
-    The maintainability index (MI) is a compound metric, with the primary aim
-    being to determine how easy it will be to maintain a particular body of
-    code.
+    A terminal shows a Rich table of rank and MI from the JSON object. A pipe
+    or ``--json`` prints that object. The maintainability index (MI) is a
+    compound metric, with the primary aim being to determine how easy it will
+    be to maintain a particular body of code.
 
     :param paths: The paths where to find modules or packages to analyze. More
         than one path is allowed.
@@ -488,6 +490,8 @@ def mi(
     :param -j, --json: Format results in JSON.
     :param --sort: If given, results are sorted in ascending order.
     :param -O, --output-file <str>: The output file (default to stdout).
+    :param --theme <str>: ``auto``, ``tokyo-night``, or ``light``. ``auto``
+        uses ``COLORFGBG`` when set, otherwise Tokyo Night.
     """
     config = Config(
         min=min.upper(),
@@ -501,7 +505,16 @@ def mi(
 
     harvester = MIHarvester(paths, config)
     with outstream(output_file) as stream:
-        log_result(harvester, json=json, stream=stream)
+        mode = cc_output_mode(json=json, xml=False, md=False, is_tty=stream.isatty())
+        if mode == "rich":
+            console = Console(
+                theme=select_theme(theme, os.environ.get("COLORFGBG")),
+                file=stream,
+                highlight=False,
+            )
+            render_mi(harvester.as_dict(), console)
+            return
+        log_result(harvester, json=mode == "json", stream=stream)
 
 
 @mi_app.command("mi")
@@ -564,12 +577,18 @@ def _mi_command(
         str | None,
         typer.Option("--output-file", "-O", help="The output file (default to stdout)."),
     ] = _cfg.get_value("output_file", str, None),
+    theme: Annotated[
+        Literal["auto", "tokyo-night", "light"],
+        typer.Option(
+            "--theme",
+            help="Color theme. auto uses COLORFGBG when set, otherwise Tokyo Night.",
+        ),
+    ] = "auto",
 ):
     """Analyze the given Python modules and compute the Maintainability Index.
 
-    The maintainability index (MI) is a compound metric, with the primary aim
-    being to determine how easy it will be to maintain a particular body of
-    code.
+    A terminal shows a Rich table of rank and MI. A pipe or --json prints one
+    JSON object.
     """
     mi(
         paths,
@@ -582,6 +601,7 @@ def _mi_command(
         json=json_output,
         sort=_mando_bool(False, sort),
         output_file=output_file,
+        theme=theme,
     )
 
 
