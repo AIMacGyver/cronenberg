@@ -246,6 +246,7 @@ MI_FLAGS = (
     "--sort",
     "-O",
     "--output-file",
+    "--theme",
     "-h",
     "--help",
 )
@@ -270,16 +271,8 @@ def test_mi_fixture_matches_terminal_text_and_json(tmp_path):
     env["HOME"] = str(tmp_path)
     env.pop("CRONENBERGCFG", None)
 
-    terminal = subprocess.run(
+    piped = subprocess.run(
         ["cronenberg", "mi", str(source_path)],
-        check=False,
-        capture_output=True,
-        text=True,
-        env=env,
-        cwd=tmp_path,
-    )
-    shown = subprocess.run(
-        ["cronenberg", "mi", str(source_path), "-s"],
         check=False,
         capture_output=True,
         text=True,
@@ -295,12 +288,10 @@ def test_mi_fixture_matches_terminal_text_and_json(tmp_path):
         cwd=tmp_path,
     )
 
-    assert terminal.returncode == 0
-    assert terminal.stdout == f"{source_path} - A\n"
-    assert shown.returncode == 0
-    assert shown.stdout == f"{source_path} - A (100.00)\n"
+    assert piped.returncode == 0
     assert parsed_json.returncode == 0
-    assert json.loads(parsed_json.stdout) == {str(source_path): {"mi": 100.0, "rank": "A"}}
+    assert piped.stdout == parsed_json.stdout
+    assert json.loads(piped.stdout) == {str(source_path): {"mi": 100.0, "rank": "A"}}
 
 
 def test_mi_multi_flag_inverts_the_default(tmp_path):

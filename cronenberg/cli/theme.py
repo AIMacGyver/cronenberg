@@ -155,6 +155,27 @@ def render_raw(payload: dict, console: Console) -> None:
         console.print(table)
 
 
+def render_mi(payload: dict, console: Console) -> None:
+    """Render a Maintainability Index dictionary.
+
+    Args:
+        payload: Filenames mapped to MI records or error records, in analysis
+            order.
+        console: Console whose theme supplies rank and metric styles.
+    """
+    for filename, record in payload.items():
+        console.print(filename, style="cc.file")
+        if isinstance(record, dict) and "error" in record and "rank" not in record:
+            console.print(str(record["error"]), style="cc.error")
+            continue
+        table = Table(show_header=True, header_style="cc.file", box=None, pad_edge=False)
+        table.add_column("Rank")
+        table.add_column("MI")
+        rank = str(record.get("rank", ""))
+        table.add_row(Text(rank, style=_rank_style(rank)), Text(str(record.get("mi", "")), style="cc.complexity"))
+        console.print(table)
+
+
 def _cc_rows(blocks: object) -> Iterator[tuple[str, str, str]]:
     if not isinstance(blocks, list):
         return

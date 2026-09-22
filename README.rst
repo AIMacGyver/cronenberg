@@ -24,11 +24,11 @@ Requirements
 
 Cronenberg requires **Python 3.11** or newer.
 
-``cc``, ``raw``, and ``mi`` use `Typer <https://typer.tiangolo.com/>`__. ``cc``
-and ``raw`` render a terminal with `Rich <https://rich.readthedocs.io/>`__.
-``hal`` uses `mando <https://github.com/rubik/mando>`__. ``mi`` and ``hal``
-use `colorama <https://github.com/tartley/colorama>`__. If ``colorama`` cannot
-be imported, those commands are not colored.
+``cc``, ``raw``, and ``mi`` use `Typer <https://typer.tiangolo.com/>`__ and render
+a terminal with `Rich <https://rich.readthedocs.io/>`__. ``hal`` uses
+`mando <https://github.com/rubik/mando>`__ and
+`colorama <https://github.com/tartley/colorama>`__. If ``colorama`` cannot
+be imported, ``hal`` is not colored.
 
 Installation
 ------------

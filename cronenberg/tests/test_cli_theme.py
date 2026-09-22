@@ -6,7 +6,7 @@ import subprocess
 
 from rich.console import Console
 
-from cronenberg.cli.theme import LIGHT, TOKYO_NIGHT, cc_output_mode, render_cc, render_raw, select_theme
+from cronenberg.cli.theme import LIGHT, TOKYO_NIGHT, cc_output_mode, render_cc, render_mi, render_raw, select_theme
 
 CLASSIFY = {"m.py": [{"rank": "A", "name": "classify", "complexity": 3}]}
 CLASSIFY_SNAPSHOT = "m.py\nRank  Name      Complexity\nA     classify  3         \n"
@@ -118,6 +118,17 @@ def test_raw_tty_snapshot_shows_metric_values():
     )
     assert "38;2;192;202;245m" in console.file.getvalue()
     assert text.index("loc") < text.index("lloc") < text.index("single_comments")
+
+
+def test_mi_tty_snapshot_shows_rank_and_score():
+    console = _console(TOKYO_NIGHT, width=40)
+    render_mi({"mod.py": {"mi": 100.0, "rank": "A"}}, console)
+    text = console.export_text(styles=False)
+
+    assert text == "mod.py\nRank  MI   \nA     100.0\n"
+    assert "A" in text
+    assert "100.0" in text
+    assert "38;2;158;206;106m" in console.file.getvalue()
 
 
 def test_unknown_theme_is_a_usage_error(tmp_path):
