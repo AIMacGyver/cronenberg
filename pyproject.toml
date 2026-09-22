@@ -48,6 +48,9 @@ dev = [
 line-length = 120
 target-version = "py311"
 
+[tool.ruff.format]
+quote-style = "double"
+
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
 
