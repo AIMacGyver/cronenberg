@@ -1,6 +1,7 @@
 import json
 import os
 import subprocess
+import sys
 from importlib.metadata import distribution
 
 from cronenberg.complexity import cc_visit
@@ -58,8 +59,10 @@ def test_installed_metadata_keeps_runtime_deps_without_obsolete_hooks():
     assert all(entry_point.name != "eggsecutable" for entry_point in dist.entry_points)
     assert "toml" not in (dist.metadata.get_all("Provides-Extra") or [])
     assert all("tomli" not in requirement for requirement in requirements)
-    assert any(requirement.startswith("mando") for requirement in requirements)
-    assert any(requirement.startswith("colorama") for requirement in requirements)
+    assert all(not requirement.startswith("mando") for requirement in requirements)
+    assert all(not requirement.startswith("colorama") for requirement in requirements)
+    assert any(requirement.startswith("typer") for requirement in requirements)
+    assert any(requirement.startswith("rich") for requirement in requirements)
     assert [(entry_point.name, entry_point.value) for entry_point in console_scripts] == [
         ("cronenberg", "cronenberg:main"),
     ]
@@ -375,9 +378,64 @@ def test_hal_help_lists_existing_flags():
 
     assert "Usage: cronenberg hal" in help_result.stdout
     assert all(flag in help_result.stdout for flag in HAL_FLAGS)
-    assert "usage: cronenberg" in root.stdout
+    assert "Usage: cronenberg" in root.stdout
+    assert "--version" in root.stdout
     for name in ("cc", "raw", "mi", "hal"):
         assert name in root.stdout
+
+
+def test_root_without_args_shows_help():
+    result = subprocess.run(
+        ["cronenberg"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    assert "Usage: cronenberg" in result.stdout
+    for name in ("cc", "raw", "mi", "hal"):
+        assert name in result.stdout
+
+
+def test_root_version_and_unknown_command():
+    from cronenberg import __version__
+
+    version = subprocess.run(
+        ["cronenberg", "--version"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    short = subprocess.run(
+        ["cronenberg", "-v"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    unknown = subprocess.run(
+        ["cronenberg", "nope"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert version.returncode == 0
+    assert short.returncode == 0
+    assert version.stdout.strip() == __version__
+    assert short.stdout.strip() == __version__
+    assert unknown.returncode == 2
+
+
+def test_mando_and_colorama_are_not_importable():
+    for module_name in ("mando", "colorama"):
+        result = subprocess.run(
+            [sys.executable, "-c", f"import {module_name}"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode != 0
 
 
 def test_hal_fixture_matches_terminal_text_and_json(tmp_path):

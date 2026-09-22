@@ -9,7 +9,6 @@ from contextlib import contextmanager
 from typing import Annotated, Literal
 
 import typer
-from mando import Program
 from rich.console import Console
 
 import cronenberg.complexity as cc_mod
@@ -70,45 +69,40 @@ class FileConfig:
 
 _cfg = FileConfig()
 
-program = Program(version=sys.modules["cronenberg"].__version__)
-# Typer commands stay in the mando command list so root help still names them.
-program._subparsers.add_parser(
-    "cc",
-    help="Analyze the given Python modules and compute Cyclomatic Complexity (CC).",
-)
-program._subparsers.add_parser(
-    "raw",
-    help="Analyze the given Python modules and compute raw metrics.",
-)
-program._subparsers.add_parser(
-    "mi",
-    help="Analyze the given Python modules and compute the Maintainability Index.",
-)
-program._subparsers.add_parser(
-    "hal",
-    help="Analyze the given Python modules and compute their Halstead metrics.",
+
+def _print_version(value: bool) -> None:
+    """Print the package version and exit when the version flag is present.
+
+    Args:
+        value: Whether ``-v`` or ``--version`` was passed.
+    """
+    if value:
+        typer.echo(sys.modules["cronenberg"].__version__)
+        raise typer.Exit()
+
+
+app = typer.Typer(
+    add_completion=False,
+    pretty_exceptions_enable=False,
+    no_args_is_help=True,
+    context_settings={"help_option_names": ["-h", "--help"]},
 )
 
-cc_app = typer.Typer(
-    add_completion=False,
-    pretty_exceptions_enable=False,
-    context_settings={"help_option_names": ["-h", "--help"]},
-)
-raw_app = typer.Typer(
-    add_completion=False,
-    pretty_exceptions_enable=False,
-    context_settings={"help_option_names": ["-h", "--help"]},
-)
-mi_app = typer.Typer(
-    add_completion=False,
-    pretty_exceptions_enable=False,
-    context_settings={"help_option_names": ["-h", "--help"]},
-)
-hal_app = typer.Typer(
-    add_completion=False,
-    pretty_exceptions_enable=False,
-    context_settings={"help_option_names": ["-h", "--help"]},
-)
+
+@app.callback()
+def _root(
+    version: Annotated[
+        bool,
+        typer.Option(
+            "--version",
+            "-v",
+            help="Show the version and exit.",
+            callback=_print_version,
+            is_eager=True,
+        ),
+    ] = False,
+) -> None:
+    """Code Metrics in Python."""
 
 _MI_MULTI_DEFAULT = _cfg.get_value("multi", bool, True)
 _MI_SHOW_DEFAULT = _cfg.get_value("show_mi", bool, False)
@@ -216,7 +210,7 @@ def cc(
         )
 
 
-@cc_app.command("cc")
+@app.command("cc")
 def _cc_command(
     paths: Annotated[
         list[str],
@@ -387,7 +381,7 @@ def raw(
         log_result(harvester, json=mode == "json", stream=stream)
 
 
-@raw_app.command("raw")
+@app.command("raw")
 def _raw_command(
     paths: Annotated[
         list[str],
@@ -527,7 +521,7 @@ def mi(
         log_result(harvester, json=mode == "json", stream=stream)
 
 
-@mi_app.command("mi")
+@app.command("mi")
 def _mi_command(
     paths: Annotated[
         list[str],
@@ -667,7 +661,7 @@ def hal(
         log_result(harvester, json=mode == "json", xml=False, md=False, stream=stream)
 
 
-@hal_app.command("hal")
+@app.command("hal")
 def _hal_command(
     paths: Annotated[
         list[str],
