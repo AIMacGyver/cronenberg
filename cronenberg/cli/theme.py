@@ -176,6 +176,35 @@ def render_mi(payload: dict, console: Console) -> None:
         console.print(table)
 
 
+def render_hal(payload: dict, console: Console) -> None:
+    """Render a Halstead dictionary.
+
+    Args:
+        payload: Filenames mapped to ``total`` and ``functions`` records, in
+            analysis order. Function names stay in record order.
+        console: Console whose theme supplies file, name, and metric styles.
+    """
+    for filename, record in payload.items():
+        console.print(filename, style="cc.file")
+        if isinstance(record, dict) and "error" in record and "total" not in record:
+            console.print(str(record["error"]), style="cc.error")
+            continue
+        console.print("total", style="cc.name")
+        _print_metric_table(console, record.get("total") or {})
+        for function_name, metrics in (record.get("functions") or {}).items():
+            console.print(function_name, style="cc.name")
+            _print_metric_table(console, metrics)
+
+
+def _print_metric_table(console: Console, metrics: dict) -> None:
+    table = Table(show_header=True, header_style="cc.file", box=None, pad_edge=False)
+    table.add_column("Metric")
+    table.add_column("Value")
+    for key, value in metrics.items():
+        table.add_row(Text(str(key), style="cc.name"), Text(str(value), style="cc.complexity"))
+    console.print(table)
+
+
 def _cc_rows(blocks: object) -> Iterator[tuple[str, str, str]]:
     if not isinstance(blocks, list):
         return

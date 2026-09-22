@@ -20,7 +20,7 @@ from cronenberg.cli.harvest import (
     MIHarvester,
     RawHarvester,
 )
-from cronenberg.cli.theme import cc_output_mode, render_cc, render_mi, render_raw, select_theme
+from cronenberg.cli.theme import cc_output_mode, render_cc, render_hal, render_mi, render_raw, select_theme
 
 CONFIG_SECTION_NAME = "cronenberg"
 
@@ -622,9 +622,12 @@ def hal(
     json=False,
     functions=_HAL_FUNCTIONS_DEFAULT,
     output_file=_cfg.get_value("output_file", str, None),
+    theme="auto",
 ):
-    """
-    Analyze the given Python modules and compute their Halstead metrics.
+    """Analyze the given Python modules and compute their Halstead metrics.
+
+    A terminal shows a Rich table of the JSON object's total and function
+    metrics. A pipe or ``--json`` prints that object.
 
     The Halstead metrics are a series of measurements meant to quantitatively
     measure the complexity of code, including the difficulty a programmer would
@@ -641,6 +644,8 @@ def hal(
     :param -f, --functions: Analyze files by top-level functions instead of as
         a whole.
     :param -O, --output-file <str>: The output file (default to stdout).
+    :param --theme <str>: ``auto``, ``tokyo-night``, or ``light``. ``auto``
+        uses ``COLORFGBG`` when set, otherwise Tokyo Night.
     """
     config = Config(
         exclude=exclude,
@@ -650,7 +655,16 @@ def hal(
 
     harvester = HCHarvester(paths, config)
     with outstream(output_file) as stream:
-        log_result(harvester, json=json, xml=False, md=False, stream=stream)
+        mode = cc_output_mode(json=json, xml=False, md=False, is_tty=stream.isatty())
+        if mode == "rich":
+            console = Console(
+                theme=select_theme(theme, os.environ.get("COLORFGBG")),
+                file=stream,
+                highlight=False,
+            )
+            render_hal(harvester.as_dict(), console)
+            return
+        log_result(harvester, json=mode == "json", xml=False, md=False, stream=stream)
 
 
 @hal_app.command("hal")
@@ -700,12 +714,18 @@ def _hal_command(
         str | None,
         typer.Option("--output-file", "-O", help="The output file (default to stdout)."),
     ] = _cfg.get_value("output_file", str, None),
+    theme: Annotated[
+        Literal["auto", "tokyo-night", "light"],
+        typer.Option(
+            "--theme",
+            help="Color theme. auto uses COLORFGBG when set, otherwise Tokyo Night.",
+        ),
+    ] = "auto",
 ):
     """Analyze the given Python modules and compute their Halstead metrics.
 
-    The Halstead metrics are a series of measurements meant to quantitatively
-    measure the complexity of code, including the difficulty a programmer would
-    have in writing it.
+    A terminal shows a Rich table of the JSON metrics. A pipe or --json prints
+    one JSON object.
     """
     hal(
         paths,
@@ -714,6 +734,7 @@ def _hal_command(
         json=json_output,
         functions=_mando_bool(_HAL_FUNCTIONS_DEFAULT, functions),
         output_file=output_file,
+        theme=theme,
     )
 
 
