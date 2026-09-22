@@ -133,6 +133,22 @@ def test_file_config_applies_tool_cronenberg_defaults(monkeypatch, tmp_path):
     assert cfg.get_value('cc_min', str, 'A') == 'C'
 
 
+def test_file_config_ignores_setup_cfg(monkeypatch, tmp_path):
+    home = tmp_path / 'home'
+    home.mkdir()
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('HOME', str(home))
+    monkeypatch.delenv('CRONENBERGCFG', raising=False)
+    (tmp_path / 'setup.cfg').write_text('[cronenberg]\ncc_min = Z\n')
+
+    cfg = cli.FileConfig()
+    assert cfg.get_value('cc_min', str, 'A') == 'A'
+
+    (home / '.cronenberg.cfg').write_text('[cronenberg]\ncc_min = B\n')
+    cfg = cli.FileConfig()
+    assert cfg.get_value('cc_min', str, 'A') == 'B'
+
+
 def test_cc(mocker, log_mock):
     harv_mock = mocker.patch('cronenberg.cli.CCHarvester')
     harv_mock.return_value = mocker.sentinel.harvester
