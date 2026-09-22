@@ -25,8 +25,7 @@ Requirements
 Cronenberg requires **Python 3.11** or newer.
 
 The commands use `Typer <https://typer.tiangolo.com/>`__ and render a terminal
-with `Rich <https://rich.readthedocs.io/>`__. Root help and ``--version`` still
-use `mando <https://github.com/rubik/mando>`__.
+with `Rich <https://rich.readthedocs.io/>`__.
 
 Installation
 ------------

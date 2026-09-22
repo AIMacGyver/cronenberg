@@ -15,24 +15,8 @@ def color_enabled():
     return False
 
 
-try:
-    import colorama
-
-    colorama.init(strip=not color_enabled())
-    GREEN, YELLOW, RED = (
-        colorama.Fore.GREEN,
-        colorama.Fore.YELLOW,
-        colorama.Fore.RED,
-    )
-    MAGENTA, CYAN, WHITE = (
-        colorama.Fore.MAGENTA,
-        colorama.Fore.CYAN,
-        colorama.Fore.WHITE,
-    )
-    BRIGHT, RESET = colorama.Style.BRIGHT, colorama.Style.RESET_ALL
-except ImportError:  # pragma: no cover
-    # No colorama, so let's fallback to no-color mode
-    GREEN = YELLOW = RED = MAGENTA = CYAN = WHITE = BRIGHT = RESET = ''
+# Rich owns terminal color. These stay empty so older formatters keep working.
+GREEN = YELLOW = RED = MAGENTA = CYAN = WHITE = BRIGHT = RESET = ''
 
 RANKS_COLORS = {
     'A': GREEN,
