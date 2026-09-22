@@ -6,7 +6,6 @@ Attributes:
 
 import fnmatch
 import os
-import platform
 import sys
 import xml.etree.ElementTree as et
 from contextlib import contextmanager
@@ -15,45 +14,27 @@ from cronenberg.cli.colors import BRIGHT, LETTERS_COLORS, RANKS_COLORS, RESET, T
 from cronenberg.complexity import cc_rank
 from cronenberg.visitors import Function
 
-# PyPy doesn't support encoding parameter in `open()` function and works with
-# UTF-8 encoding by default
-if platform.python_implementation() == 'PyPy':
-
-    @contextmanager
-    def _open(path):
-        '''Mock of the built-in `open()` function. If `path` is `-` then
-        `sys.stdin` is returned.
-        '''
-        if path == '-':
-            yield sys.stdin
-        else:
-            with open(path) as f:
-                yield f
+default_encoding = 'utf-8'
+# Add customized file encoding to fix #86.
+# By default `open()` function uses `locale.getpreferredencoding(False)`
+# encoding (see https://docs.python.org/3/library/functions.html#open).
+# This code allows to change `open()` encoding by setting an environment
+# variable.
+_encoding = os.getenv(
+    'RADONFILESENCODING', default_encoding
+)
 
 
-else:
-    default_encoding = 'utf-8'
-    # Add customized file encoding to fix #86.
-    # By default `open()` function uses `locale.getpreferredencoding(False)`
-    # encoding (see https://docs.python.org/3/library/functions.html#open).
-    # This code allows to change `open()` encoding by setting an environment
-    # variable.
-    _encoding = os.getenv(
-        'RADONFILESENCODING', default_encoding
-    )
-
-    _open_function = open
-
-    @contextmanager
-    def _open(path):
-        '''Mock of the built-in `open()` function. If `path` is `-` then
-        `sys.stdin` is returned.
-        '''
-        if path == '-':
-            yield sys.stdin
-        else:
-            with _open_function(path, encoding=_encoding) as f:
-                yield f
+@contextmanager
+def _open(path):
+    '''Mock of the built-in `open()` function. If `path` is `-` then
+    `sys.stdin` is returned.
+    '''
+    if path == '-':
+        yield sys.stdin
+    else:
+        with open(path, encoding=_encoding) as f:
+            yield f
 
 
 def _is_python_file(filename):

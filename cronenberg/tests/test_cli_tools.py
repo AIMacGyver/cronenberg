@@ -1,5 +1,4 @@
 import os
-import platform
 import sys
 
 import pytest
@@ -74,19 +73,12 @@ def test_open(mocker):
         assert False, 'tools._open raised TypeError'
 
     m = mocker.mock_open()
-
-    if platform.python_implementation() == 'PyPy':
-        mocker.patch('cronenberg.cli.tools.open', m, create=True)
-        tools._open('randomfile.py').__enter__()
-        m.assert_called_with('randomfile.py')
-    else:
-        mocker.patch('cronenberg.cli.tools._open_function', m, create=True)
-        tools._open('randomfile.py').__enter__()
-        default_encoding = 'utf-8'
-        except_encoding = os.getenv(
-            'RADONFILESENCODING', default_encoding
-        )
-        m.assert_called_with('randomfile.py', encoding=except_encoding)
+    mocker.patch('cronenberg.cli.tools.open', m, create=True)
+    tools._open('randomfile.py').__enter__()
+    m.assert_called_with(
+        'randomfile.py',
+        encoding=os.getenv('RADONFILESENCODING', 'utf-8'),
+    )
 
 
 @pytest.fixture
