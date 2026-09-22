@@ -1,11 +1,26 @@
 import json
 import os
+import re
 import subprocess
 import sys
 from importlib.metadata import distribution
 
 from cronenberg.complexity import cc_visit
 from cronenberg.raw import analyze
+
+_ANSI = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def _plain(text: str) -> str:
+    """Return terminal text without ANSI color codes.
+
+    Args:
+        text: Captured command output.
+
+    Returns:
+        The same text with color sequences removed.
+    """
+    return _ANSI.sub("", text)
 
 SOURCE = """def classify(value):
     if value < 0:
@@ -118,9 +133,10 @@ def test_cc_help_lists_existing_flags():
         text=True,
     )
 
-    assert "Usage: cronenberg cc" in help_result.stdout
-    assert all(flag in help_result.stdout for flag in CC_FLAGS)
-    assert "--json" in short_help.stdout
+    help_text = _plain(help_result.stdout)
+    assert "Usage: cronenberg cc" in help_text
+    assert all(flag in help_text for flag in CC_FLAGS)
+    assert "--json" in _plain(short_help.stdout)
     assert short_help.returncode == 0
 
 
@@ -194,8 +210,9 @@ def test_raw_help_lists_existing_flags():
         text=True,
     )
 
-    assert "Usage: cronenberg raw" in help_result.stdout
-    assert all(flag in help_result.stdout for flag in RAW_FLAGS)
+    help_text = _plain(help_result.stdout)
+    assert "Usage: cronenberg raw" in help_text
+    assert all(flag in help_text for flag in RAW_FLAGS)
 
 
 def test_raw_fixture_matches_terminal_text_and_json(tmp_path):
@@ -263,8 +280,9 @@ def test_mi_help_lists_existing_flags():
         text=True,
     )
 
-    assert "Usage: cronenberg mi" in help_result.stdout
-    assert all(flag in help_result.stdout for flag in MI_FLAGS)
+    help_text = _plain(help_result.stdout)
+    assert "Usage: cronenberg mi" in help_text
+    assert all(flag in help_text for flag in MI_FLAGS)
 
 
 def test_mi_fixture_matches_terminal_text_and_json(tmp_path):
@@ -376,12 +394,14 @@ def test_hal_help_lists_existing_flags():
         text=True,
     )
 
-    assert "Usage: cronenberg hal" in help_result.stdout
-    assert all(flag in help_result.stdout for flag in HAL_FLAGS)
-    assert "Usage: cronenberg" in root.stdout
-    assert "--version" in root.stdout
+    help_text = _plain(help_result.stdout)
+    root_text = _plain(root.stdout)
+    assert "Usage: cronenberg hal" in help_text
+    assert all(flag in help_text for flag in HAL_FLAGS)
+    assert "Usage: cronenberg" in root_text
+    assert "--version" in root_text
     for name in ("cc", "raw", "mi", "hal"):
-        assert name in root.stdout
+        assert name in root_text
 
 
 def test_root_without_args_shows_help():
@@ -392,10 +412,11 @@ def test_root_without_args_shows_help():
         text=True,
     )
 
+    help_text = _plain(result.stdout)
     assert result.returncode == 0
-    assert "Usage: cronenberg" in result.stdout
+    assert "Usage: cronenberg" in help_text
     for name in ("cc", "raw", "mi", "hal"):
-        assert name in result.stdout
+        assert name in help_text
 
 
 def test_root_version_and_unknown_command():
