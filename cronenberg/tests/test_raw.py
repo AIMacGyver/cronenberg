@@ -12,148 +12,148 @@ def dedent(code):
 
 def test_unicode_source_fixture():
     assert unicode_source_fixture(None) is None
-    assert 'èèèè' in unicode_source_fixture.__code__.co_consts
+    assert "èèèè" in unicode_source_fixture.__code__.co_consts
 
 
 FIND_CASES = [
     (
-        '''
+        """
      return 0
-     ''',
+     """,
         None,
     ),
     (
-        '''
+        """
      # most useless comment :
-     ''',
+     """,
         None,
     ),
     (
-        '''
+        """
      if a: pass
-     ''',
+     """,
         2,
     ),
     (
-        '''
+        """
      # useless comment
      if a: pass
-     ''',
+     """,
         4,
     ),
     (
-        '''
+        """
      d[3:]
-     ''',
+     """,
         3,
     ),
 ]
 
 
-@pytest.mark.parametrize('code,result', FIND_CASES)
+@pytest.mark.parametrize("code,result", FIND_CASES)
 def test_find(code, result):
     code = _generate(dedent(code))
     if result is None:
         with pytest.raises(ValueError):
-            _find(code, OP, ':')
+            _find(code, OP, ":")
     else:
-        assert _find(code, OP, ':') == result
+        assert _find(code, OP, ":") == result
 
 
 LOGICAL_LINES_CASES = [
     (
-        '''
-     ''',
+        """
+     """,
         0,
     ),
     (
-        '''
+        """
      # most useless comment
-     ''',
+     """,
         0,
     ),
     (
-        '''
+        """
      a * b + c
-     ''',
+     """,
         1,
     ),
     (
-        '''
+        """
      if a:
-     ''',
+     """,
         1,
     ),
     (
-        '''
+        """
      try:
-     ''',
+     """,
         1,
     ),
     (
-        '''
+        """
      if a:  # just a comment
-     ''',
+     """,
         1,
     ),
     (
-        '''
+        """
      try:  # just a comment
-     ''',
+     """,
         1,
     ),
     (
-        '''
+        """
      if a: pass
-     ''',
+     """,
         2,
     ),
     (
-        '''
+        """
      if a: continue
-     ''',
+     """,
         2,
     ),
     (
-        '''
+        """
      if a: break
-     ''',
+     """,
         2,
     ),
     (
-        '''
+        """
      if a: return
-     ''',
+     """,
         2,
     ),
     (
-        '''
+        """
      if a: pass  # just a comment
-     ''',
+     """,
         2,
     ),
     (
-        '''
+        """
      if a: continue  # just a comment
-     ''',
+     """,
         2,
     ),
     (
-        '''
+        """
      if a: break  # just a comment
-     ''',
+     """,
         2,
     ),
     (
-        '''
+        """
      if a: return  # just a comment
-     ''',
+     """,
         2,
     ),
     (
-        '''
+        """
      42 # a comment
-     ''',
+     """,
         1,
     ),
     (
@@ -165,33 +165,33 @@ LOGICAL_LINES_CASES = [
         1,
     ),
     (
-        '''
+        """
      # just a comment
-     ''',
+     """,
         0,
     ),
     (
-        '''
+        """
      a = 2; b = 43
-     ''',
+     """,
         2,
     ),
     (
-        '''
+        """
      a = 1; b = 2;
-     ''',
+     """,
         2,
     ),
     (
-        '''
+        """
      a = 2; b = 43; c = 42; d = 3; print(a)
-     ''',
+     """,
         5,
     ),
 ]
 
 
-@pytest.mark.parametrize('code,expected_number_of_lines', LOGICAL_LINES_CASES)
+@pytest.mark.parametrize("code,expected_number_of_lines", LOGICAL_LINES_CASES)
 def test_logical(code, expected_number_of_lines):
     code = _generate(dedent(code))
     assert _logical(code) == expected_number_of_lines
@@ -199,8 +199,8 @@ def test_logical(code, expected_number_of_lines):
 
 ANALYZE_CASES = [
     (
-        '''
-     ''',
+        """
+     """,
         (0, 0, 0, 0, 0, 0, 0),
     ),
     (
@@ -212,33 +212,33 @@ ANALYZE_CASES = [
         (3, 1, 0, 0, 3, 0, 0),
     ),
     (
-        '''
+        """
      # just a comment
      if a and b:
          print('woah')
      else:
          # you'll never get here
          print('ven')
-     ''',
+     """,
         (6, 4, 4, 2, 0, 0, 2),
     ),
     (
-        '''
+        """
      #
      #
      #
-     ''',
+     """,
         (3, 0, 0, 3, 0, 0, 3),
     ),
     (
-        '''
+        """
      if a:
          print
 
 
      else:
          print
-     ''',
+     """,
         (6, 4, 4, 0, 0, 2, 0),
     ),
     # In this case the docstring is not counted as a multi-line string
@@ -269,9 +269,9 @@ ANALYZE_CASES = [
         (12, 9, 6, 2, 3, 2, 1),
     ),
     (
-        '''
+        """
      a = [1, 2, 3,
-     ''',
+     """,
         SyntaxError,
     ),
     # Test that handling of parameters with a value passed in.
@@ -406,11 +406,11 @@ ANALYZE_CASES = [
         (2, 2, 2, 0, 0, 0, 0),
     ),
     (
-        r'''
+        r"""
     def function():
         " this is not a multiline " \
             " docstring "
-    ''',
+    """,
         (3, 2, 3, 0, 0, 0, 0),
     ),
     (
@@ -421,11 +421,11 @@ ANALYZE_CASES = [
         (2, 2, 2, 1, 0, 0, 0),
     ),
     (
-        r'''
+        r"""
     def function():
         " a docstring is a not single-line comment when " \
             # followed by a comment on a another line
-    ''',
+    """,
         (3, 2, 3, 1, 0, 0, 0),
     ),
     (
@@ -438,10 +438,10 @@ ANALYZE_CASES = [
         (4, 2, 3, 0, 0, 1, 0),
     ),
     (
-        r'''
+        r"""
     def function():
         pass; pass
-    ''',
+    """,
         (2, 3, 2, 0, 0, 0, 0),
     ),
     (
@@ -463,27 +463,19 @@ def _assert_analysis(code, expected):
     else:
         result = analyze(code)
         assert result == Module(*expected)
-        assert (
-            result.loc
-            == result.blank
-            + result.sloc
-            + result.single_comments
-            + result.multi
-        )
+        assert result.loc == result.blank + result.sloc + result.single_comments + result.multi
 
 
-@pytest.mark.parametrize('code,expected', ANALYZE_CASES)
+@pytest.mark.parametrize("code,expected", ANALYZE_CASES)
 def test_analyze(code, expected):
     _assert_analysis(dedent(code), expected)
 
 
-@pytest.mark.parametrize(
-    'exception_type', [KeyboardInterrupt, SystemExit, GeneratorExit]
-)
+@pytest.mark.parametrize("exception_type", [KeyboardInterrupt, SystemExit, GeneratorExit])
 def test_analyze_case_helper_propagates_process_control(exception_type):
     class InterruptingExpected:
         def __len__(self):
             raise exception_type
 
     with pytest.raises(exception_type):
-        _assert_analysis('', InterruptingExpected())
+        _assert_analysis("", InterruptingExpected())

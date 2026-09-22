@@ -103,6 +103,7 @@ def _root(
 ) -> None:
     """Code Metrics in Python."""
 
+
 _MI_MULTI_DEFAULT = _cfg.get_value("multi", bool, True)
 _MI_SHOW_DEFAULT = _cfg.get_value("show_mi", bool, False)
 _HAL_FUNCTIONS_DEFAULT = _cfg.get_value("functions", bool, False)
@@ -213,12 +214,7 @@ def cc(
 def _cc_command(
     paths: Annotated[
         list[str],
-        typer.Argument(
-            help=(
-                "The paths where to find modules or packages to analyze. More "
-                "than one path is allowed."
-            )
-        ),
+        typer.Argument(help=("The paths where to find modules or packages to analyze. More than one path is allowed.")),
     ],
     min: Annotated[
         str,
@@ -384,12 +380,7 @@ def raw(
 def _raw_command(
     paths: Annotated[
         list[str],
-        typer.Argument(
-            help=(
-                "The paths where to find modules or packages to analyze. More "
-                "than one path is allowed."
-            )
-        ),
+        typer.Argument(help=("The paths where to find modules or packages to analyze. More than one path is allowed.")),
     ],
     exclude: Annotated[
         str | None,
@@ -524,12 +515,7 @@ def mi(
 def _mi_command(
     paths: Annotated[
         list[str],
-        typer.Argument(
-            help=(
-                "The paths where to find modules or packages to analyze. More "
-                "than one path is allowed."
-            )
-        ),
+        typer.Argument(help=("The paths where to find modules or packages to analyze. More than one path is allowed.")),
     ],
     min: Annotated[
         str,
@@ -664,12 +650,7 @@ def hal(
 def _hal_command(
     paths: Annotated[
         list[str],
-        typer.Argument(
-            help=(
-                "The paths where to find modules or packages to analyze. More "
-                "than one path is allowed."
-            )
-        ),
+        typer.Argument(help=("The paths where to find modules or packages to analyze. More than one path is allowed.")),
     ],
     exclude: Annotated[
         str | None,

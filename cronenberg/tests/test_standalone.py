@@ -22,6 +22,7 @@ def _plain(text: str) -> str:
     """
     return _ANSI.sub("", text)
 
+
 SOURCE = """def classify(value):
     if value < 0:
         return "negative"

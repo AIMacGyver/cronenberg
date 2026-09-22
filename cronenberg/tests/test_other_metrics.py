@@ -11,11 +11,11 @@ def dedent(code):
 
 def _compute_mi_rank(score):
     if 0 <= score < 10:
-        res = 'C'
+        res = "C"
     elif 10 <= score < 20:
-        res = 'B'
+        res = "B"
     elif 20 <= score <= 100:
-        res = 'A'
+        res = "A"
     else:
         raise ValueError(score)
     return res
@@ -29,7 +29,7 @@ MI_COMPUTE_CASES = [
 ]
 
 
-@pytest.mark.parametrize('values,expected', MI_COMPUTE_CASES)
+@pytest.mark.parametrize("values,expected", MI_COMPUTE_CASES)
 def test_mi_compute(values, expected):
     # Equivalent to unittest's assertAlmostEqual
     assert round(mi_compute(*values) - expected, 5) == 0
@@ -38,19 +38,19 @@ def test_mi_compute(values, expected):
 MI_RANK_CASES = [(score, _compute_mi_rank(score)) for score in range(0, 100)]
 
 
-@pytest.mark.parametrize('score,expected', MI_RANK_CASES)
+@pytest.mark.parametrize("score,expected", MI_RANK_CASES)
 def test_mi_rank(score, expected):
     assert mi_rank(score) == expected
 
 
 H_VISIT_CASES = [
     (
-        '''
-     ''',
+        """
+     """,
         ((0,) * 12, []),
     ),
     (
-        '''
+        """
      a = b + c
      d = c - f
 
@@ -58,7 +58,7 @@ H_VISIT_CASES = [
          a = 2 - 4
          d = a + b
          return a ** d
-     ''',
+     """,
         (
             (
                 3,
@@ -98,22 +98,22 @@ H_VISIT_CASES = [
 ]
 
 
-@pytest.mark.parametrize('code,expected', H_VISIT_CASES)
+@pytest.mark.parametrize("code,expected", H_VISIT_CASES)
 def test_h_visit(code, expected):
     code = dedent(code)
     # test for almost-equality
     for act, exp in zip(h_visit(code), expected):
         for a, e in zip(act, exp):
-            assert a == e or int(a * 10 ** 3) == int(e * 10 ** 3)
+            assert a == e or int(a * 10**3) == int(e * 10**3)
 
 
-first_mi = '''
+first_mi = """
      def f(a, b, c):
          return (a ** b) % c
 
      k = f(1, 2, 3)
      print(k ** 2 - 1)
-'''
+"""
 
 second_mi = '''
      class A(object):
@@ -136,14 +136,14 @@ second_mi = '''
 
 MI_VISIT_CASES = [
     (
-        '''
-     ''',
+        """
+     """,
         100.0,
         True,
     ),
     (
-        '''
-     ''',
+        """
+     """,
         100.0,
         False,
     ),
@@ -163,7 +163,7 @@ MI_VISIT_CASES = [
 ]
 
 
-@pytest.mark.parametrize('code,expected,count_multi', MI_VISIT_CASES)
+@pytest.mark.parametrize("code,expected,count_multi", MI_VISIT_CASES)
 def test_mi_visit(code, expected, count_multi):
     code = dedent(code)
     expected = expected
