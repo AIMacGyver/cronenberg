@@ -4,14 +4,12 @@ repos:
     hooks:
       - id: ruff-check
         args: [--fix]
-      # Temporary formatter debt (6 files); remove paths as focused PRs land.
+      # Temporary formatter debt (4 files); remove paths as focused PRs land.
       - id: ruff-format
         exclude: |
           (?x)^(
-            cronenberg/cli/harvest\.py|
             cronenberg/cli/__init__\.py|
             cronenberg/cli/tools\.py|
-            cronenberg/tests/test_cli_harvest\.py|
             cronenberg/tests/test_cli\.py|
             cronenberg/tests/test_cli_tools\.py
           )$
