@@ -228,15 +228,123 @@ def test_raw_fixture_matches_terminal_text_and_json(tmp_path):
     }
 
 
-def test_mi_and_hal_stay_on_mando():
+MI_FLAGS = (
+    "-n",
+    "--min",
+    "-x",
+    "--max",
+    "-m",
+    "--multi",
+    "-e",
+    "--exclude",
+    "-i",
+    "--ignore",
+    "-s",
+    "--show",
+    "-j",
+    "--json",
+    "--sort",
+    "-O",
+    "--output-file",
+    "-h",
+    "--help",
+)
+
+
+def test_mi_help_lists_existing_flags():
+    help_result = subprocess.run(
+        ["cronenberg", "mi", "--help"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "Usage: cronenberg mi" in help_result.stdout
+    assert all(flag in help_result.stdout for flag in MI_FLAGS)
+
+
+def test_mi_fixture_matches_terminal_text_and_json(tmp_path):
+    source_path = tmp_path / "mod.py"
+    source_path.write_text("def other():\n    return 0\n")
+    env = os.environ.copy()
+    env["HOME"] = str(tmp_path)
+    env.pop("CRONENBERGCFG", None)
+
+    terminal = subprocess.run(
+        ["cronenberg", "mi", str(source_path)],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+        cwd=tmp_path,
+    )
+    shown = subprocess.run(
+        ["cronenberg", "mi", str(source_path), "-s"],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+        cwd=tmp_path,
+    )
+    parsed_json = subprocess.run(
+        ["cronenberg", "mi", str(source_path), "-j"],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+        cwd=tmp_path,
+    )
+
+    assert terminal.returncode == 0
+    assert terminal.stdout == f"{source_path} - A\n"
+    assert shown.returncode == 0
+    assert shown.stdout == f"{source_path} - A (100.00)\n"
+    assert parsed_json.returncode == 0
+    assert json.loads(parsed_json.stdout) == {str(source_path): {"mi": 100.0, "rank": "A"}}
+
+
+def test_mi_multi_flag_inverts_the_default(tmp_path):
+    source = 'def documented():\n    """doc"""\n    return 1\n'
+    source_path = tmp_path / "mod.py"
+    source_path.write_text(source)
+    env = os.environ.copy()
+    env["HOME"] = str(tmp_path)
+    env.pop("CRONENBERGCFG", None)
+
+    plain = subprocess.run(
+        ["cronenberg", "mi", str(source_path), "-j"],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+        cwd=tmp_path,
+    )
+    flagged = subprocess.run(
+        ["cronenberg", "mi", str(source_path), "-j", "-m"],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+        cwd=tmp_path,
+    )
+
+    from cronenberg.metrics import mi_visit
+
+    assert plain.returncode == 0
+    assert flagged.returncode == 0
+    assert json.loads(plain.stdout)[str(source_path)]["mi"] == mi_visit(source, True)
+    assert json.loads(flagged.stdout)[str(source_path)]["mi"] == mi_visit(source, False)
+
+
+def test_hal_stays_on_mando():
     root = subprocess.run(
         ["cronenberg", "--help"],
         check=True,
         capture_output=True,
         text=True,
     )
-    mi_help = subprocess.run(
-        ["cronenberg", "mi", "--help"],
+    hal_help = subprocess.run(
+        ["cronenberg", "hal", "--help"],
         check=True,
         capture_output=True,
         text=True,
@@ -245,8 +353,8 @@ def test_mi_and_hal_stay_on_mando():
     assert "usage: cronenberg" in root.stdout
     for name in ("cc", "raw", "mi", "hal"):
         assert name in root.stdout
-    assert "usage: cronenberg mi" in mi_help.stdout
-    assert "--json" in mi_help.stdout
+    assert "usage: cronenberg hal" in hal_help.stdout
+    assert "--json" in hal_help.stdout
 
 
 def test_removed_hosted_integration_is_absent():

@@ -71,8 +71,7 @@ class FileConfig:
 _cfg = FileConfig()
 
 program = Program(version=sys.modules["cronenberg"].__version__)
-# `cc` and `raw` are parsed by Typer. Keep them in the mando command list so
-# root help still names every command.
+# Typer commands stay in the mando command list so root help still names them.
 program._subparsers.add_parser(
     "cc",
     help="Analyze the given Python modules and compute Cyclomatic Complexity (CC).",
@@ -80,6 +79,10 @@ program._subparsers.add_parser(
 program._subparsers.add_parser(
     "raw",
     help="Analyze the given Python modules and compute raw metrics.",
+)
+program._subparsers.add_parser(
+    "mi",
+    help="Analyze the given Python modules and compute the Maintainability Index.",
 )
 
 cc_app = typer.Typer(
@@ -92,6 +95,29 @@ raw_app = typer.Typer(
     pretty_exceptions_enable=False,
     context_settings={"help_option_names": ["-h", "--help"]},
 )
+mi_app = typer.Typer(
+    add_completion=False,
+    pretty_exceptions_enable=False,
+    context_settings={"help_option_names": ["-h", "--help"]},
+)
+
+_MI_MULTI_DEFAULT = _cfg.get_value("multi", bool, True)
+_MI_SHOW_DEFAULT = _cfg.get_value("show_mi", bool, False)
+
+
+def _mando_bool(default: bool, given: bool) -> bool:
+    """Resolve a boolean flag the way mando did.
+
+    Args:
+        default: Value used when the flag is absent.
+        given: Whether the flag was present.
+
+    Returns:
+        ``default`` when the flag is absent, otherwise its opposite.
+    """
+    if given:
+        return not default
+    return default
 
 
 def cc(
@@ -429,16 +455,14 @@ def _raw_command(
     )
 
 
-@program.command
-@program.arg("paths", nargs="+")
 def mi(
     paths,
     min=_cfg.get_value("mi_min", str, "A"),
     max=_cfg.get_value("mi_max", str, "C"),
-    multi=_cfg.get_value("multi", bool, True),
+    multi=_MI_MULTI_DEFAULT,
     exclude=_cfg.get_value("exclude", str, None),
     ignore=_cfg.get_value("ignore", str, None),
-    show=_cfg.get_value("show_mi", bool, False),
+    show=_MI_SHOW_DEFAULT,
     json=False,
     sort=False,
     output_file=_cfg.get_value("output_file", str, None),
@@ -478,6 +502,87 @@ def mi(
     harvester = MIHarvester(paths, config)
     with outstream(output_file) as stream:
         log_result(harvester, json=json, stream=stream)
+
+
+@mi_app.command("mi")
+def _mi_command(
+    paths: Annotated[
+        list[str],
+        typer.Argument(
+            help=(
+                "The paths where to find modules or packages to analyze. More "
+                "than one path is allowed."
+            )
+        ),
+    ],
+    min: Annotated[
+        str,
+        typer.Option("--min", "-n", help="The minimum MI to display (default to A)."),
+    ] = _cfg.get_value("mi_min", str, "A"),
+    max: Annotated[
+        str,
+        typer.Option("--max", "-x", help="The maximum MI to display (default to C)."),
+    ] = _cfg.get_value("mi_max", str, "C"),
+    multi: Annotated[
+        bool,
+        typer.Option(
+            "--multi",
+            "-m",
+            help="If given, multiline strings are not counted as comments.",
+        ),
+    ] = False,
+    exclude: Annotated[
+        str | None,
+        typer.Option(
+            "--exclude",
+            "-e",
+            help=(
+                "Exclude files only when their path matches one of these glob "
+                "patterns. Usually needs quoting at the command line."
+            ),
+        ),
+    ] = _cfg.get_value("exclude", str, None),
+    ignore: Annotated[
+        str | None,
+        typer.Option(
+            "--ignore",
+            "-i",
+            help=(
+                "Ignore directories when their name matches one of these glob "
+                "patterns: cronenberg won't even descend into them. By default, "
+                "hidden directories (starting with '.') are ignored."
+            ),
+        ),
+    ] = _cfg.get_value("ignore", str, None),
+    show: Annotated[
+        bool,
+        typer.Option("--show", "-s", help="If given, the actual MI value is shown in results."),
+    ] = False,
+    json_output: Annotated[bool, typer.Option("--json", "-j", help="Format results in JSON.")] = False,
+    sort: Annotated[bool, typer.Option("--sort", help="If given, results are sorted in ascending order.")] = False,
+    output_file: Annotated[
+        str | None,
+        typer.Option("--output-file", "-O", help="The output file (default to stdout)."),
+    ] = _cfg.get_value("output_file", str, None),
+):
+    """Analyze the given Python modules and compute the Maintainability Index.
+
+    The maintainability index (MI) is a compound metric, with the primary aim
+    being to determine how easy it will be to maintain a particular body of
+    code.
+    """
+    mi(
+        paths,
+        min=min,
+        max=max,
+        multi=_mando_bool(_MI_MULTI_DEFAULT, multi),
+        exclude=exclude,
+        ignore=ignore,
+        show=_mando_bool(_MI_SHOW_DEFAULT, show),
+        json=json_output,
+        sort=_mando_bool(False, sort),
+        output_file=output_file,
+    )
 
 
 @program.command
