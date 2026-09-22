@@ -71,14 +71,23 @@ class FileConfig:
 _cfg = FileConfig()
 
 program = Program(version=sys.modules["cronenberg"].__version__)
-# `cc` is parsed by Typer. Keep it in the mando command list so root help
-# still names every command.
+# `cc` and `raw` are parsed by Typer. Keep them in the mando command list so
+# root help still names every command.
 program._subparsers.add_parser(
     "cc",
     help="Analyze the given Python modules and compute Cyclomatic Complexity (CC).",
 )
+program._subparsers.add_parser(
+    "raw",
+    help="Analyze the given Python modules and compute raw metrics.",
+)
 
 cc_app = typer.Typer(
+    add_completion=False,
+    pretty_exceptions_enable=False,
+    context_settings={"help_option_names": ["-h", "--help"]},
+)
+raw_app = typer.Typer(
     add_completion=False,
     pretty_exceptions_enable=False,
     context_settings={"help_option_names": ["-h", "--help"]},
@@ -294,8 +303,6 @@ def _cc_command(
     )
 
 
-@program.command
-@program.arg("paths", nargs="+")
 def raw(
     paths,
     exclude=_cfg.get_value("exclude", str, None),
@@ -327,6 +334,72 @@ def raw(
     harvester = RawHarvester(paths, config)
     with outstream(output_file) as stream:
         log_result(harvester, json=json, stream=stream)
+
+
+@raw_app.command("raw")
+def _raw_command(
+    paths: Annotated[
+        list[str],
+        typer.Argument(
+            help=(
+                "The paths where to find modules or packages to analyze. More "
+                "than one path is allowed."
+            )
+        ),
+    ],
+    exclude: Annotated[
+        str | None,
+        typer.Option(
+            "--exclude",
+            "-e",
+            help=(
+                "Exclude files only when their path matches one of these glob "
+                "patterns. Usually needs quoting at the command line."
+            ),
+        ),
+    ] = _cfg.get_value("exclude", str, None),
+    ignore: Annotated[
+        str | None,
+        typer.Option(
+            "--ignore",
+            "-i",
+            help=(
+                "Ignore directories when their name matches one of these glob "
+                "patterns: cronenberg won't even descend into them. By default, "
+                "hidden directories (starting with '.') are ignored."
+            ),
+        ),
+    ] = _cfg.get_value("ignore", str, None),
+    summary: Annotated[
+        bool,
+        typer.Option(
+            "--summary",
+            "-s",
+            help="If given, at the end of the analysis display the summary of the gathered metrics. Default to False.",
+        ),
+    ] = False,
+    json_output: Annotated[
+        bool,
+        typer.Option(
+            "--json",
+            "-j",
+            help="Format results in JSON. The JSON export does not include the summary.",
+        ),
+    ] = False,
+    output_file: Annotated[
+        str | None,
+        typer.Option("--output-file", "-O", help="The output file (default to stdout)."),
+    ] = _cfg.get_value("output_file", str, None),
+):
+    """Analyze the given Python modules and compute raw metrics."""
+    raw(
+        paths,
+        exclude=exclude,
+        ignore=ignore,
+        summary=summary,
+        json=json_output,
+        output_file=output_file,
+    )
 
 
 @program.command
