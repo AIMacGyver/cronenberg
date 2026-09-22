@@ -5,15 +5,23 @@ __version__ = '6.0.1'
 
 
 def main():
-    '''The entry point for Setuptools.'''
+    '''The entry point for Setuptools.
+
+    ``cc`` is dispatched to Typer. ``raw``, ``mi``, and ``hal`` stay on mando.
+    '''
+    import os
     import sys
 
-    from cronenberg.cli import log_error, program
+    from cronenberg.cli import cc_app, log_error, program
 
     if not sys.argv[1:]:
         sys.argv.append('-h')
     try:
-        program()
+        if sys.argv[1] == 'cc':
+            prog = os.path.basename(sys.argv[0])
+            cc_app(args=sys.argv[2:], prog_name=f'{prog} cc')
+        else:
+            program()
     except Exception as e:
         log_error(e)
 

@@ -24,8 +24,9 @@ Requirements
 
 Cronenberg requires **Python 3.11** or newer.
 
-It depends on `mando <https://github.com/rubik/mando>`__ for the command-line
-interface and on `colorama <https://github.com/tartley/colorama>`__. If
+The ``cc`` command uses `Typer <https://typer.tiangolo.com/>`__. ``raw``,
+``mi``, and ``hal`` use `mando <https://github.com/rubik/mando>`__. Colored
+terminal output uses `colorama <https://github.com/tartley/colorama>`__. If
 ``colorama`` cannot be imported, command output is not colored.
 
 Installation
