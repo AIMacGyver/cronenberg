@@ -6,7 +6,9 @@ import os
 import sys
 import tomllib
 from contextlib import contextmanager
+from typing import Annotated
 
+import typer
 from mando import Program
 
 import cronenberg.complexity as cc_mod
@@ -67,10 +69,20 @@ class FileConfig:
 _cfg = FileConfig()
 
 program = Program(version=sys.modules["cronenberg"].__version__)
+# `cc` is parsed by Typer. Keep it in the mando command list so root help
+# still names every command.
+program._subparsers.add_parser(
+    "cc",
+    help="Analyze the given Python modules and compute Cyclomatic Complexity (CC).",
+)
+
+cc_app = typer.Typer(
+    add_completion=False,
+    pretty_exceptions_enable=False,
+    context_settings={"help_option_names": ["-h", "--help"]},
+)
 
 
-@program.command
-@program.arg("paths", nargs="+")
 def cc(
     paths,
     min=_cfg.get_value("cc_min", str, "A"),
@@ -141,6 +153,121 @@ def cc(
             md=md,
             stream=stream,
         )
+
+
+@cc_app.command("cc")
+def _cc_command(
+    paths: Annotated[
+        list[str],
+        typer.Argument(
+            help=(
+                "The paths where to find modules or packages to analyze. More "
+                "than one path is allowed."
+            )
+        ),
+    ],
+    min: Annotated[
+        str,
+        typer.Option("--min", "-n", help="The minimum complexity to display (default to A)."),
+    ] = _cfg.get_value("cc_min", str, "A"),
+    max: Annotated[
+        str,
+        typer.Option("--max", "-x", help="The maximum complexity to display (default to F)."),
+    ] = _cfg.get_value("cc_max", str, "F"),
+    show_complexity: Annotated[
+        bool,
+        typer.Option(
+            "--show-complexity",
+            "-s",
+            help="Whether or not to show the actual complexity score together with the A-F rank. Default to False.",
+        ),
+    ] = _cfg.get_value("show_complexity", bool, False),
+    average: Annotated[
+        bool,
+        typer.Option(
+            "--average",
+            "-a",
+            help="If True, at the end of the analysis display the average complexity. Default to False.",
+        ),
+    ] = _cfg.get_value("average", bool, False),
+    exclude: Annotated[
+        str | None,
+        typer.Option(
+            "--exclude",
+            "-e",
+            help=(
+                "Exclude files only when their path matches one of these glob "
+                "patterns. Usually needs quoting at the command line."
+            ),
+        ),
+    ] = _cfg.get_value("exclude", str, None),
+    ignore: Annotated[
+        str | None,
+        typer.Option(
+            "--ignore",
+            "-i",
+            help=(
+                "Ignore directories when their name matches one of these glob "
+                "patterns: cronenberg won't even descend into them. By default, "
+                "hidden directories (starting with '.') are ignored."
+            ),
+        ),
+    ] = _cfg.get_value("ignore", str, None),
+    order: Annotated[
+        str,
+        typer.Option("--order", "-o", help="The ordering function. Can be SCORE, LINES or ALPHA."),
+    ] = _cfg.get_value("order", str, "SCORE"),
+    json_output: Annotated[bool, typer.Option("--json", "-j", help="Format results in JSON.")] = False,
+    no_assert: Annotated[
+        bool,
+        typer.Option("--no-assert", help="Do not count `assert` statements when computing complexity."),
+    ] = _cfg.get_value("no_assert", bool, False),
+    show_closures: Annotated[
+        bool,
+        typer.Option("--show-closures", help="Add closures/inner classes to the output."),
+    ] = _cfg.get_value("show_closures", bool, False),
+    total_average: Annotated[
+        bool,
+        typer.Option(
+            "--total-average",
+            help=(
+                "Like -a, --average, but it is not influenced by min and max. "
+                "Every analyzed block is counted, no matter whether it is displayed or not."
+            ),
+        ),
+    ] = _cfg.get_value("total_average", bool, False),
+    xml: Annotated[
+        bool,
+        typer.Option("--xml", help="Format results in XML (compatible with CCM)."),
+    ] = False,
+    md: Annotated[bool, typer.Option("--md", help="Format results in Markdown.")] = False,
+    output_file: Annotated[
+        str | None,
+        typer.Option("--output-file", "-O", help="The output file (default to stdout)."),
+    ] = _cfg.get_value("output_file", str, None),
+):
+    """Analyze the given Python modules and compute Cyclomatic Complexity (CC).
+
+    The output can be filtered using the min and max flags. In addition to
+    that, by default complexity score is not displayed.
+    """
+    cc(
+        paths,
+        min=min,
+        max=max,
+        show_complexity=show_complexity,
+        average=average,
+        exclude=exclude,
+        ignore=ignore,
+        order=order,
+        json=json_output,
+        no_assert=no_assert,
+        show_closures=show_closures,
+        total_average=total_average,
+        xml=xml,
+        md=md,
+        output_file=output_file,
+    )
 
 
 @program.command
