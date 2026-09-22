@@ -65,10 +65,13 @@ Python.
 Cyclomatic Complexity Example
 -----------------------------
 
-On a terminal, ``cc`` prints a Rich table of each block's rank, name, and
-complexity. ``--theme`` is ``auto``, ``tokyo-night``, or ``light``. ``auto``
-reads ``COLORFGBG`` when it is set and otherwise uses Tokyo Night. ANSI
-backgrounds 7 and 15 select the light theme.
+On a terminal, ``cc`` prints the file path, then one Rich table for the
+module-level functions. Each class gets its own table titled with the class
+name, and methods are the rows. A function or method with closures gets a
+separate table under that name. Columns are rank, name, and complexity.
+``--theme`` is ``auto``, ``tokyo-night``, or ``light``. ``auto`` reads
+``COLORFGBG`` when it is set and otherwise uses Tokyo Night. ANSI backgrounds
+7 and 15 select the light theme.
 
 A pipe, ``--json``, or a non-terminal ``--output-file`` prints the same JSON
 object. ``--xml`` and ``--md`` still write those formats. ``-n`` and ``-x``
@@ -77,8 +80,11 @@ still limit which ranks are included.
 .. code-block:: text
 
     path/to/module.py
-    Rank  Name      Complexity
-    A     classify  3
+    ╭──────┬──────────┬────────────╮
+    │ Rank │ Name     │ Complexity │
+    ├──────┼──────────┼────────────┤
+    │ A    │ classify │ 3          │
+    ╰──────┴──────────┴────────────╯
 
 **Note about file encoding**
 

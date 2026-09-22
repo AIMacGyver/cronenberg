@@ -18,7 +18,14 @@ from cronenberg.cli.theme import (
 )
 
 CLASSIFY = {"m.py": [{"rank": "A", "name": "classify", "complexity": 3}]}
-CLASSIFY_SNAPSHOT = "m.py\nRank  Name      Complexity\nA     classify  3         \n"
+CLASSIFY_SNAPSHOT = (
+    "m.py\n"
+    "╭──────┬──────────┬────────────╮\n"
+    "│ Rank │ Name     │ Complexity │\n"
+    "├──────┼──────────┼────────────┤\n"
+    "│ A    │ classify │ 3          │\n"
+    "╰──────┴──────────┴────────────╯\n"
+)
 
 
 def _console(theme, width=40):
@@ -76,26 +83,181 @@ def test_light_theme_uses_light_rank_color():
     assert "38;2;24;128;56m" in console.file.getvalue()
 
 
-def test_render_keeps_block_order_and_nested_methods():
+def test_render_keeps_block_order_within_groups():
     payload = {
         "z.py": [
             {
+                "type": "class",
                 "rank": "B",
                 "name": "high",
                 "complexity": 2,
-                "methods": [{"rank": "A", "name": "inner", "complexity": 1}],
+                "methods": [
+                    {
+                        "type": "method",
+                        "rank": "A",
+                        "name": "inner",
+                        "complexity": 1,
+                        "classname": "high",
+                    }
+                ],
             },
-            {"rank": "A", "name": "low", "complexity": 1},
+            {"type": "function", "rank": "A", "name": "low", "complexity": 1},
+            {
+                "type": "class",
+                "name": "Zed",
+                "rank": "A",
+                "complexity": 1,
+                "methods": [
+                    {
+                        "type": "method",
+                        "rank": "A",
+                        "name": "tail",
+                        "complexity": 1,
+                        "classname": "Zed",
+                    }
+                ],
+            },
+            {"type": "function", "rank": "C", "name": "later", "complexity": 4},
         ]
     }
     console = _console(TOKYO_NIGHT, width=80)
     render_cc(payload, console)
     text = console.export_text(styles=False)
 
-    assert text.index("high") < text.index("inner") < text.index("low")
-    assert "\nB     high" in text
-    assert "\nA     inner" in text
-    assert "\nA     low" in text
+    assert text.index("high") < text.index("inner") < text.index("low") < text.index("later")
+    assert text.index("later") < text.index("Zed")
+    class_table, remainder = text.split("╯", 1)
+    functions_table, late = remainder.split("╯", 1)
+    assert "inner" in class_table
+    assert "low" not in class_table
+    assert "low" in functions_table
+    assert "later" in functions_table
+    assert "tail" not in functions_table
+    assert "tail" in late
+
+
+def test_two_classes_are_separate_titled_tables():
+    payload = {
+        "mod.py": [
+            {
+                "type": "class",
+                "name": "Alpha",
+                "rank": "A",
+                "complexity": 1,
+                "methods": [
+                    {
+                        "type": "method",
+                        "rank": "A",
+                        "name": "run",
+                        "complexity": 1,
+                        "classname": "Alpha",
+                        "closures": [],
+                    }
+                ],
+            },
+            {
+                "type": "class",
+                "name": "Beta",
+                "rank": "B",
+                "complexity": 2,
+                "methods": [
+                    {
+                        "type": "method",
+                        "rank": "B",
+                        "name": "run",
+                        "complexity": 2,
+                        "classname": "Beta",
+                        "closures": [],
+                    }
+                ],
+            },
+        ]
+    }
+    console = _console(TOKYO_NIGHT, width=80)
+    render_cc(payload, console)
+    text = console.export_text(styles=False)
+
+    alpha, beta = text.split("Beta", 1)
+    assert "Alpha" in alpha
+    assert alpha.count("run") == 1
+    assert beta.count("run") == 1
+    assert "╯" in alpha
+    assert text.count("╭") == 2
+
+
+def test_function_closure_renders_in_its_own_table():
+    payload = {
+        "mod.py": [
+            {
+                "type": "function",
+                "rank": "B",
+                "name": "outer",
+                "complexity": 3,
+                "closures": [
+                    {
+                        "type": "function",
+                        "rank": "A",
+                        "name": "inner",
+                        "complexity": 1,
+                        "closures": [],
+                    }
+                ],
+            }
+        ]
+    }
+    console = _console(TOKYO_NIGHT, width=80)
+    render_cc(payload, console)
+    text = console.export_text(styles=False)
+
+    assert text.count("╭") == 2
+    parent, closure = text.split("╯", 1)
+    assert "outer" in parent
+    assert "inner" not in parent
+    title, table = closure.split("╭", 1)
+    assert "outer" in title
+    assert "inner" in table
+
+
+def test_method_closure_renders_under_the_method_name():
+    payload = {
+        "mod.py": [
+            {
+                "type": "class",
+                "name": "Alpha",
+                "rank": "A",
+                "complexity": 2,
+                "methods": [
+                    {
+                        "type": "method",
+                        "rank": "A",
+                        "name": "run",
+                        "complexity": 2,
+                        "classname": "Alpha",
+                        "closures": [
+                            {
+                                "type": "function",
+                                "rank": "A",
+                                "name": "helper",
+                                "complexity": 1,
+                                "closures": [],
+                            }
+                        ],
+                    }
+                ],
+            }
+        ]
+    }
+    console = _console(TOKYO_NIGHT, width=80)
+    render_cc(payload, console)
+    text = console.export_text(styles=False)
+
+    class_table, closure = text.split("╯", 1)
+    assert "Alpha" in class_table
+    assert "run" in class_table
+    assert "helper" not in class_table
+    title, table = closure.split("╭", 1)
+    assert "run" in title
+    assert "helper" in table
 
 
 def test_raw_tty_snapshot_shows_metric_values():
@@ -153,14 +315,20 @@ def test_hal_tty_snapshot_shows_function_and_metrics():
 
     assert text == (
         "mod.py\n"
-        "total\n"
-        "Metric  Value\n"
-        "h1      0    \n"
-        "bugs    0.0  \n"
-        "other\n"
-        "Metric  Value\n"
-        "h1      0    \n"
-        "bugs    0.0  \n"
+        "      total       \n"
+        "╭────────┬───────╮\n"
+        "│ Metric │ Value │\n"
+        "├────────┼───────┤\n"
+        "│ h1     │ 0     │\n"
+        "│ bugs   │ 0.0   │\n"
+        "╰────────┴───────╯\n"
+        "      other       \n"
+        "╭────────┬───────╮\n"
+        "│ Metric │ Value │\n"
+        "├────────┼───────┤\n"
+        "│ h1     │ 0     │\n"
+        "│ bugs   │ 0.0   │\n"
+        "╰────────┴───────╯\n"
     )
     assert "other" in text
     assert "h1" in text
