@@ -366,7 +366,7 @@ def test_mi_as_json(mi_config, mocker):
     ]
 
     h.as_json()
-    d_mock.assert_called_with(dict([h._results[0], h._results[-1]]))
+    d_mock.assert_called_with(dict([h._results[0], h._results[-1]]), sort_keys=True)
 
 
 def test_mi_as_xml(mi_config):
