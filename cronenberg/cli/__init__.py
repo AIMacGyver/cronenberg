@@ -56,12 +56,22 @@ class FileConfig:
 
     @staticmethod
     def file_config():
-        """Return any file configuration discovered"""
+        """Return Cronenberg options discovered in local config files.
+
+        Only the ``[tool.cronenberg]`` table is read from ``pyproject.toml``.
+        Other tool tables are ignored so percent signs in those tables are not
+        interpolated by ``ConfigParser``.
+
+        Returns:
+            A parser containing the discovered Cronenberg options.
+        """
         config = configparser.ConfigParser()
         for path in (os.getenv("CRONENBERGCFG", None), "cronenberg.cfg"):
             if path is not None and os.path.exists(path):
                 config.read_file(open(path))
-        config.read_dict(FileConfig.toml_config())
+        tool_config = FileConfig.toml_config()
+        if CONFIG_SECTION_NAME in tool_config:
+            config.read_dict({CONFIG_SECTION_NAME: tool_config[CONFIG_SECTION_NAME]})
         config.read([os.path.expanduser("~/.cronenberg.cfg")])
         return config
 

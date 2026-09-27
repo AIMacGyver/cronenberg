@@ -1,4 +1,6 @@
+import json
 import os
+import subprocess
 import sys
 import tomllib
 from configparser import ConfigParser
@@ -123,6 +125,51 @@ def test_file_config_applies_tool_cronenberg_defaults(monkeypatch, tmp_path):
 
     cfg = cli.FileConfig()
     assert cfg.get_value("cc_min", str, "A") == "C"
+
+
+def test_file_config_ignores_percent_in_unrelated_tool_table(monkeypatch, tmp_path):
+    home = tmp_path / "home"
+    home.mkdir()
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.delenv("CRONENBERGCFG", raising=False)
+    (tmp_path / "pyproject.toml").write_bytes(
+        b"[tool.pytest.ini_options]\n"
+        b'log_format = "%(asctime)s %(levelname)s:%(filename)s:%(lineno)d %(message)s"\n'
+        b"\n"
+        b"[tool.some_tool]\n"
+        b'some_option = "%(lineno)d"\n'
+        b"\n"
+        b"[tool.cronenberg]\n"
+        b'cc_min = "C"\n'
+    )
+    source_path = tmp_path / "mod.py"
+    source_path.write_text("def low():\n    return 1\n", encoding="utf-8")
+
+    loaded = cli.FileConfig.toml_config()
+    assert loaded["some_tool"]["some_option"] == "%(lineno)d"
+    assert "log_format" in loaded["pytest"]["ini_options"]
+
+    cfg = cli.FileConfig()
+    assert cfg.get_value("cc_min", str, "A") == "C"
+
+    env = os.environ.copy()
+    env["HOME"] = str(home)
+    env.pop("CRONENBERGCFG", None)
+    result = subprocess.run(
+        ["cronenberg", "cc", str(source_path), "-s", "--min", "A"],
+        check=False,
+        capture_output=True,
+        text=True,
+        cwd=tmp_path,
+        env=env,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert [(block["name"], block["complexity"], block["rank"]) for block in payload[str(source_path)]] == [
+        ("low", 1, "A")
+    ]
 
 
 def test_file_config_ignores_setup_cfg(monkeypatch, tmp_path):
