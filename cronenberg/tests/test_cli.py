@@ -308,6 +308,29 @@ def test_log_error(stdout_mock):
     stdout_mock.assert_called_once_with("ERROR: mystr\n")
 
 
+def test_log_literal_braces_do_not_crash(mocker, stdout_mock):
+    cli.log("unclosed '{'")
+    cli.log('unclosed "}"')
+    cli.log("balanced {{braces}}")
+    cli.log("{{literal}} {0}", "value")
+    cli.log_error("bad '}'")
+    cli.log_error(RuntimeError("unexpected '{'"))
+    cli.log_error("missing {}", "value")
+
+    stdout_mock.assert_has_calls(
+        [
+            mocker.call("unclosed '{'\n"),
+            mocker.call('unclosed "}"\n'),
+            mocker.call("balanced {{braces}}\n"),
+            mocker.call("{literal} value\n"),
+            mocker.call("ERROR: bad '}'\n"),
+            mocker.call("ERROR: unexpected '{'\n"),
+            mocker.call("ERROR: missing value\n"),
+        ]
+    )
+    assert stdout_mock.call_count == 7
+
+
 def test_log_result(mocker):
     log_mock = mocker.patch("cronenberg.cli.log")
 
