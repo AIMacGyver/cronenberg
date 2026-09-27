@@ -193,32 +193,40 @@ def _cc_identity(block):
 
 
 def test_default_cc_omits_nested_class(tmp_path):
-    """Record that default cc drops a nested class and ignores its code.
+    """Count a nested class in the enclosing class, not as its own block.
 
-    This records the defect and is not the desired end state. The sample is
-    the nested ``student2`` / ``classmate`` class from Radon issue 215.
+    On the Radon issue 215 sample, ``student2``'s reported complexity is higher
+    than the same class with ``classmate`` removed, by ``classmate``'s own
+    complexity. ``nott`` stays 4 and ``staticMethod`` stays 1. Default blocks
+    still omit ``classmate`` and ``example``. ``--show-closures`` still lists
+    ``student2.classmate``.
     """
     visitor = ComplexityVisitor.from_code(RADON_215_SAMPLE)
     student = visitor.classes[0]
     classmate = student.inner_classes[0]
     bare = ComplexityVisitor.from_code(RADON_215_SAMPLE_WITHOUT_NESTED_CLASS).classes[0]
 
-    assert [(block.letter, block.fullname, block.complexity) for block in visitor.blocks] == [
-        ("C", "student2", 4),
-        ("M", "student2.nott", 4),
-        ("M", "student2.staticMethod", 1),
-    ]
     assert classmate.name == "classmate"
     assert (classmate.complexity, classmate.real_complexity) == (2, 2)
     assert [(method.fullname, method.complexity) for method in classmate.methods] == [
         ("classmate.example", 1),
     ]
+    assert bare.complexity == 4
+    assert student.complexity == bare.complexity + classmate.complexity
+    assert [(block.letter, block.fullname, block.complexity) for block in visitor.blocks] == [
+        ("C", "student2", student.complexity),
+        ("M", "student2.nott", 4),
+        ("M", "student2.staticMethod", 1),
+    ]
     reported = {block.fullname for block in visitor.blocks}
     assert "classmate" not in reported
     assert "classmate.example" not in reported
+    assert "example" not in reported
 
-    assert (student.complexity, student.real_complexity) == (4, 6)
-    assert (bare.complexity, bare.real_complexity) == (student.complexity, student.real_complexity)
+    assert [(method.name, method.complexity) for method in student.methods] == [
+        ("nott", 4),
+        ("staticMethod", 1),
+    ]
     assert [(method.name, method.complexity) for method in bare.methods] == [
         (method.name, method.complexity) for method in student.methods
     ]
@@ -227,7 +235,7 @@ def test_default_cc_omits_nested_class(tmp_path):
     sample_path.write_text(RADON_215_SAMPLE, encoding="utf-8")
     default_blocks = _public_cc_blocks(sample_path, show_closures=False)
     assert [_cc_identity(block) for block in default_blocks] == [
-        ("class", "student2", None, 4),
+        ("class", "student2", None, student.complexity),
         ("method", "nott", "student2", 4),
         ("method", "staticMethod", "student2", 1),
     ]
@@ -235,16 +243,18 @@ def test_default_cc_omits_nested_class(tmp_path):
         ("nott", "student2", 4),
         ("staticMethod", "student2", 1),
     ]
+    default_names = {block["name"] for block in default_blocks}
+    assert "classmate" not in default_names
+    assert "example" not in default_names
 
     closure_blocks = _public_cc_blocks(sample_path, show_closures=True)
-    assert [_cc_identity(block) for block in closure_blocks] == [
-        ("method", "nott", "student2", 4),
-        ("class", "student2", None, 4),
-        ("class", "student2.classmate", None, 2),
-        ("method", "staticMethod", "student2", 1),
-        ("method", "example", "student2.classmate", 1),
-    ]
-    nested = closure_blocks[2]
+    closure_identity = [_cc_identity(block) for block in closure_blocks]
+    assert ("class", "student2.classmate", None, classmate.complexity) in closure_identity
+    assert ("method", "example", "student2.classmate", 1) in closure_identity
+    assert ("method", "nott", "student2", 4) in closure_identity
+    assert ("method", "staticMethod", "student2", 1) in closure_identity
+    assert ("class", "student2", None, student.complexity) in closure_identity
+    nested = next(block for block in closure_blocks if block["name"] == "student2.classmate")
     assert [(method["name"], method["classname"], method["complexity"]) for method in nested["methods"]] == [
         ("example", "classmate", 1),
     ]

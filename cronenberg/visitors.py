@@ -88,13 +88,23 @@ class Class(BaseClass):
 
     @property
     def complexity(self):
-        """The average complexity of the class. It corresponds to the average
-        complexity of its methods plus one.
+        """Return this class's cyclomatic complexity, including nested classes.
+
+        The score is the average complexity of its methods plus one. Each
+        direct nested class then adds its own complexity. Nested-class code
+        already stored on ``real_complexity`` is left out of that average so
+        those classes are counted once.
         """
+        nested = self.inner_classes
+        # visit_ClassDef folds each nested class in as its real complexity
+        # minus one. Drop that portion before averaging this class's own body.
+        own_real = self.real_complexity - sum(cls.real_complexity - 1 for cls in nested)
         if not self.methods:
-            return self.real_complexity
-        methods = len(self.methods)
-        return int(self.real_complexity / float(methods)) + (methods > 1)
+            own = own_real
+        else:
+            methods = len(self.methods)
+            own = int(own_real / float(methods)) + (methods > 1)
+        return own + sum(cls.complexity for cls in nested)
 
     def __str__(self):
         """String representation of a class block."""
@@ -289,7 +299,14 @@ class ComplexityVisitor(CodeVisitor):
             visitor = ComplexityVisitor(True, classname, off=False, no_assert=self.no_assert)
             visitor.visit(child)
             methods.extend(visitor.functions)
-            body_complexity += visitor.complexity + visitor.functions_complexity + len(visitor.functions)
+            # Nested-class code is included once, via classes_complexity.
+            # Methods already counted above are not added again.
+            body_complexity += (
+                visitor.complexity
+                + visitor.functions_complexity
+                + visitor.classes_complexity
+                + len(visitor.functions)
+            )
             visitors_max_lines.append(visitor.max_line)
             inner_classes.extend(visitor.classes)
 
