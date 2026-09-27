@@ -780,17 +780,24 @@ def log_result(harvester, **kwargs):
 
 
 def log(msg, *args, **kwargs):
-    """Log a message, passing *args* to the strings' `format()` method.
+    """Log a message.
 
-    *indent*, if present as a keyword argument, specifies the indent level, so
-    that `indent=0` will log normally, `indent=1` will indent the message by 4
-    spaces, &c..
-    *noformat*, if present and True, will cause the message not to be formatted
-    in any way.
+    Args:
+        msg: Text to write. Literal ``{`` and ``}`` stay unchanged when *args*
+            is empty, so an error message is not parsed by :meth:`str.format`.
+        *args: Values for :meth:`str.format`. Formatting runs only when this
+            sequence is non-empty and ``noformat`` is not set.
+        **kwargs: ``indent`` is a 4-space indent level. ``delimiter`` is
+            written after the message and defaults to a newline. ``noformat``
+            skips formatting even when *args* is provided. ``stream`` is the
+            output file and defaults to ``sys.stdout``.
     """
     indent = 4 * kwargs.get("indent", 0)
     delimiter = kwargs.get("delimiter", "\n")
-    m = msg if kwargs.get("noformat", False) else msg.format(*args)
+    if kwargs.get("noformat", False) or not args:
+        m = msg
+    else:
+        m = msg.format(*args)
     stream = kwargs.get("stream", sys.stdout)
     stream.write(" " * indent + m + delimiter)
 
@@ -804,7 +811,14 @@ def log_list(lst, *args, **kwargs):
 
 
 def log_error(msg, *args, **kwargs):
-    """Log an error message. Arguments are the same as log()."""
+    """Log an error message prefixed with ``ERROR:``.
+
+    Args:
+        msg: Error text or exception. Braces in that text are preserved when
+            no format *args* are passed.
+        *args: Positional format values, forwarded to :func:`log`.
+        **kwargs: Same keyword arguments as :func:`log`.
+    """
     log(f"ERROR: {msg}", *args, **kwargs)
 
 
