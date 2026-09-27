@@ -188,6 +188,84 @@ LOGICAL_LINES_CASES = [
      """,
         5,
     ),
+    (
+        """
+     a = {'user1': 'password1', 'user2': 'password2'}
+     """,
+        1,
+    ),
+    (
+        """
+     reflection: 'str' = None
+     """,
+        1,
+    ),
+    (
+        """
+     d[3:]
+     """,
+        1,
+    ),
+    (
+        """
+     xs[1:2:3]
+     """,
+        1,
+    ),
+    (
+        """
+     lambda x: x + 1
+     """,
+        1,
+    ),
+    (
+        """
+     lambda: 1
+     """,
+        1,
+    ),
+    (
+        """
+     case = {1: 2, 3: 4}
+     """,
+        1,
+    ),
+    (
+        """
+     match = {1: 2}
+     """,
+        1,
+    ),
+    (
+        """
+     case: 'int' = 1
+     """,
+        1,
+    ),
+    (
+        """
+     case 1:
+     """,
+        1,
+    ),
+    (
+        """
+     case 1: return 0
+     """,
+        2,
+    ),
+    (
+        """
+     match value:
+     """,
+        1,
+    ),
+    (
+        """
+     def f(a: int): pass
+     """,
+        2,
+    ),
 ]
 
 
@@ -450,6 +528,31 @@ ANALYZE_CASES = [
         """ doc string """; pass
     ''',
         (2, 3, 2, 0, 0, 0, 0),
+    ),
+    # A dictionary colon is not a second logical line (radon #262).
+    (
+        """
+    def sample_dict():
+        a = {'user1': 'password1', 'user2': 'password2'}
+        print(a)
+        return a
+    """,
+        (4, 4, 4, 0, 0, 0, 0),
+    ),
+    (
+        """
+    reflection: 'str' = None
+    """,
+        (1, 1, 1, 0, 0, 0, 0),
+    ),
+    (
+        """
+    def choose(value):
+        match value:
+            case 1: return 0
+            case _: return 1
+    """,
+        (4, 6, 4, 0, 0, 0, 0),
     ),
 ]
 
