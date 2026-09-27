@@ -2,6 +2,8 @@ import operator
 
 import pytest
 
+from cronenberg.cli import Config
+from cronenberg.cli.harvest import CCHarvester
 from cronenberg.complexity import (
     ALPHA,
     LINES,
@@ -12,7 +14,7 @@ from cronenberg.complexity import (
     cc_visit,
     sorted_results,
 )
-from cronenberg.visitors import Class, Function
+from cronenberg.visitors import Class, ComplexityVisitor, Function
 
 from .test_complexity_visitor import GENERAL_CASES, dedent
 
@@ -130,3 +132,119 @@ def test_cc_visit(code, number_of_blocks, diff, lookfor):
     names = set(map(operator.attrgetter("name"), with_inner_blocks))
     assert len(with_inner_blocks) - len(blocks) == diff
     assert lookfor in names
+
+
+# The Radon issue 215 sample, unchanged.
+RADON_215_SAMPLE = """\
+class student2:
+    def nott(self):
+        if True and False:
+            return
+        elif True:
+            return
+        else:
+            return
+        return self
+    class classmate:
+        def example(self):
+            return 0
+    @staticmethod
+    def staticMethod():
+        return None
+"""
+
+# The same class with the nested classmate block removed.
+RADON_215_SAMPLE_WITHOUT_NESTED_CLASS = """\
+class student2:
+    def nott(self):
+        if True and False:
+            return
+        elif True:
+            return
+        else:
+            return
+        return self
+    @staticmethod
+    def staticMethod():
+        return None
+"""
+
+
+def _public_cc_blocks(path, *, show_closures):
+    """Return the ``CCHarvester.as_dict`` blocks for one file."""
+    config = Config(
+        min="A",
+        max="F",
+        exclude=None,
+        ignore=None,
+        show_complexity=False,
+        average=False,
+        total_average=False,
+        order=SCORE,
+        no_assert=False,
+        show_closures=show_closures,
+    )
+    filename = str(path)
+    return CCHarvester([filename], config).as_dict()[filename]
+
+
+def _cc_identity(block):
+    return (block["type"], block["name"], block.get("classname"), block["complexity"])
+
+
+def test_default_cc_omits_nested_class(tmp_path):
+    """Record that default cc drops a nested class and ignores its code.
+
+    This records the defect and is not the desired end state. The sample is
+    the nested ``student2`` / ``classmate`` class from Radon issue 215.
+    """
+    visitor = ComplexityVisitor.from_code(RADON_215_SAMPLE)
+    student = visitor.classes[0]
+    classmate = student.inner_classes[0]
+    bare = ComplexityVisitor.from_code(RADON_215_SAMPLE_WITHOUT_NESTED_CLASS).classes[0]
+
+    assert [(block.letter, block.fullname, block.complexity) for block in visitor.blocks] == [
+        ("C", "student2", 4),
+        ("M", "student2.nott", 4),
+        ("M", "student2.staticMethod", 1),
+    ]
+    assert classmate.name == "classmate"
+    assert (classmate.complexity, classmate.real_complexity) == (2, 2)
+    assert [(method.fullname, method.complexity) for method in classmate.methods] == [
+        ("classmate.example", 1),
+    ]
+    reported = {block.fullname for block in visitor.blocks}
+    assert "classmate" not in reported
+    assert "classmate.example" not in reported
+
+    assert (student.complexity, student.real_complexity) == (4, 6)
+    assert (bare.complexity, bare.real_complexity) == (student.complexity, student.real_complexity)
+    assert [(method.name, method.complexity) for method in bare.methods] == [
+        (method.name, method.complexity) for method in student.methods
+    ]
+
+    sample_path = tmp_path / "student2.py"
+    sample_path.write_text(RADON_215_SAMPLE, encoding="utf-8")
+    default_blocks = _public_cc_blocks(sample_path, show_closures=False)
+    assert [_cc_identity(block) for block in default_blocks] == [
+        ("class", "student2", None, 4),
+        ("method", "nott", "student2", 4),
+        ("method", "staticMethod", "student2", 1),
+    ]
+    assert [(method["name"], method["classname"], method["complexity"]) for method in default_blocks[0]["methods"]] == [
+        ("nott", "student2", 4),
+        ("staticMethod", "student2", 1),
+    ]
+
+    closure_blocks = _public_cc_blocks(sample_path, show_closures=True)
+    assert [_cc_identity(block) for block in closure_blocks] == [
+        ("method", "nott", "student2", 4),
+        ("class", "student2", None, 4),
+        ("class", "student2.classmate", None, 2),
+        ("method", "staticMethod", "student2", 1),
+        ("method", "example", "student2.classmate", 1),
+    ]
+    nested = closure_blocks[2]
+    assert [(method["name"], method["classname"], method["complexity"]) for method in nested["methods"]] == [
+        ("example", "classmate", 1),
+    ]
